@@ -45,10 +45,11 @@ func main() {
 	if success {
 		fmt.Printf("Found solution in %s\n", elapsed)
 		for _, variable := range solver.State.Vars {
+			// print out values for each variable
 			fmt.Printf("Variable %v = %v", variable.Name, colors[variable.Value-1])
 		}
 	} else {
-		fmt.Print("Could not find solution in %s\n", elapsed)
+		fmt.Printf("Could not find solution in %s\n", elapsed)
 	}
 
 	// expected output is:

@@ -1,4 +1,4 @@
-# Centipede - CSP solver for Golang
+# Centipede - Constraint Satisfaction Problem Solver for Go
 
 Centipede is a Constraint Satisfaction Problem solver written in Golang. [Learn more about CSPs](https://en.wikipedia.org/wiki/Constraint_satisfaction_problem). 
 
@@ -8,9 +8,11 @@ There is also a very informative slide deck about CSPs available from Stanford U
 
 Currently, this is very much a work in progress. Here are some of its limitations:
 
-- Centipede only fully supports solving in finite domains with `int` type variables. The beginning of `string` and `float32` support has been begun but not finished. If Go supported generics, this would be done by now...
-- The search algorithm in use right now by the `IntCSPSolver` is a very simple implementation of [backtracking search](https://en.wikipedia.org/wiki/Backtracking), but I have future plans to optimize and improve this using [Arc consistency](https://en.wikipedia.org/wiki/Local_consistency#Arc_consistency).
-- Additionally, I would like to 
+- Centipede only fully supports solving in finite domains with `int` type variables. The beginning of `string` and `float32` support has been begun but not finished. If only Go supported generics, this would be done by now...
+- The search algorithm in use right now by the `IntCSPSolver` is a very simple implementation of [backtracking search](https://en.wikipedia.org/wiki/Backtracking), but I have future plans to optimize and improve this using [Arc consistency](https://en.wikipedia.org/wiki/Local_consistency#Arc_consistency). 
+- I have plans to implement the minimum remaining values (MRV) heuristic and the least constraining value (LCV) heuristic.
+- Additionally, I would like to implement some type of [iterative deepening search](https://en.wikipedia.org/wiki/Iterative_deepening_depth-first_search) in the solver. Right now, you can specify the `MaxDepth` field, but IDS could potentially reach a solution faster if it searched for a solution iteratively, increasing `MaxDepth` until it finds a solution.
+- The project needs to be cleaned up into a real package and unit tests need to be written. It would also be nice to have some better documentation.
 
 ## Example
 
@@ -56,10 +58,11 @@ elapsed := time.Since(begin)
 if success {
     fmt.Printf("Found solution in %s\n", elapsed)
     for _, variable := range solver.State.Vars {
+        // print out values for each variable
         fmt.Printf("Variable %v = %v", variable.Name, colors[variable.Value-1])
     }
 } else {
-    fmt.Print("Could not find solution in %s\n", elapsed)
+    fmt.Printf("Could not find solution in %s\n", elapsed)
 }
 
 // expected output is:
@@ -73,4 +76,18 @@ if success {
 // Variable SA = blue
 // Variable T = red
 ```
+
+## Usage
+
+Have [Go](https://golang.org/) installed. Build process currently has been tested on Linux and macOS
+
+```bash
+./build.sh && cspsolver
+```
+
+## Contributing
+
+Feel free to make a pull request if you spot anything out of order or want to improve the project.
+
+Go is not my primary programming language, but I have been wanting to learn it for a while now. Feel free to fix anything that isn't idiomatic Go. I come from a Java/Python background. 
 
