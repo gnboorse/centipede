@@ -6,7 +6,7 @@ There is also a very informative slide deck about CSPs available from Stanford U
 
 ## Project Status
 
-Currently, this is very much a work in progress. Here are some of its limitations:
+Currently, this is very much a **work in progress**. Here are some of its limitations:
 
 - Centipede only fully supports solving in finite domains with `int` type variables. The beginning of `string` and `float32` support has been begun but not finished. If only Go supported generics, this would be done by now...
 - The search algorithm in use right now by the `IntCSPSolver` is a very simple implementation of [backtracking search](https://en.wikipedia.org/wiki/Backtracking), but I have future plans to optimize and improve this using [Arc consistency](https://en.wikipedia.org/wiki/Local_consistency#Arc_consistency). 
