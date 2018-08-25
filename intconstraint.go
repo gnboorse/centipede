@@ -69,6 +69,26 @@ func NotEqualsInt(var1 VariableName, var2 VariableName) IntConstraint {
 	}}
 }
 
+// LessThanInt IntConstraint generator that checks if first variable is less than second variable
+func LessThanInt(var1 VariableName, var2 VariableName) IntConstraint {
+	return IntConstraint{VariableNames{var1, var1}, func(variables IntVariables) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value < variables.Find(var2).Value
+	}}
+}
+
+// GreaterThanInt IntConstraint generator that checks if first variable is less than second variable
+func GreaterThanInt(var1 VariableName, var2 VariableName) IntConstraint {
+	return IntConstraint{VariableNames{var1, var1}, func(variables IntVariables) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value > variables.Find(var2).Value
+	}}
+}
+
 // AllEqualsInt IntConstraint generator that checks that all given variables are equal
 func AllEqualsInt(varnames ...VariableName) IntConstraint {
 	if len(varnames) <= 0 {
