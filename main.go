@@ -1,29 +1,16 @@
 package main
 
 import (
-	"os"
+	"fmt"
 	"time"
-
-	"github.com/op/go-logging"
 )
 
-var log = logging.MustGetLogger("cspsolver")
-
 func main() {
-
-	var format = logging.MustStringFormatter(
-		`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.7s} %{color:reset} %{message}`,
-	)
-
-	logBackend := logging.AddModuleLevel(logging.NewLogBackend(os.Stdout, "", 0))
-	logBackend.SetLevel(logging.NOTICE, "")
-
-	logging.SetBackend(logging.NewBackendFormatter(logBackend, format))
-
 	// simple implementation of the map coloring problem for Australia
 	colors := [3]string{"red", "green", "blue"}
 
 	// set a variable for each of the provinces
+	// domain for the variable is the range of colors
 	vars := IntVariables{
 		// each has:   <name>,      <domain>
 		NewIntVariable("WA", IntRange(1, len(colors)+1)),
@@ -35,7 +22,8 @@ func main() {
 		NewIntVariable("T", IntRange(1, len(colors)+1)),
 	}
 
-	// bordering provinces cannot be equal
+	// bordering provinces cannot be equal.
+	// See https://en.wikipedia.org/wiki/States_and_territories_of_Australia
 	constraints := IntConstraints{
 		NotEqualsInt("WA", "NT"),
 		NotEqualsInt("WA", "SA"),
@@ -48,19 +36,29 @@ func main() {
 		NotEqualsInt("V", "SA"),
 	}
 
+	// create the solver with a maximum depth of 500
 	solver := NewIntCSPSolver(vars, constraints, 500)
 	begin := time.Now()
-	success := solver.Solve()
+	success := solver.Solve() // run the solution
 	elapsed := time.Since(begin)
 
 	if success {
-		// log.Noticef("Found solution in %s, and variables are: %v\n", success, elapsed, solver.State.Vars)
-		log.Noticef("Found solution in %s\n", elapsed)
-
+		fmt.Printf("Found solution in %s\n", elapsed)
 		for _, variable := range solver.State.Vars {
-			log.Noticef("Variable %v = %v", variable.Name, colors[variable.Value-1])
+			fmt.Printf("Variable %v = %v", variable.Name, colors[variable.Value-1])
 		}
 	} else {
-		log.Errorf("Could not find solution in %s\n", elapsed)
+		fmt.Print("Could not find solution in %s\n", elapsed)
 	}
+
+	// expected output is:
+
+	// Found solution in 46.207µs
+	// Variable WA = red
+	// Variable NT = green
+	// Variable Q = red
+	// Variable NSW = green
+	// Variable V = red
+	// Variable SA = blue
+	// Variable T = red
 }
