@@ -25,6 +25,7 @@ func main() {
 
 	// set a variable for each of the provinces
 	vars := IntVariables{
+		// each has:   <name>,      <domain>
 		NewIntVariable("WA", IntRange(1, len(colors)+1)),
 		NewIntVariable("NT", IntRange(1, len(colors)+1)),
 		NewIntVariable("Q", IntRange(1, len(colors)+1)),
