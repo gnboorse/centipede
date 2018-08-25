@@ -16,9 +16,16 @@ func NewFloatVariable(name VariableName, domain FloatDomain) FloatVariable {
 }
 
 // SetValue setter for FloatVariable value field
-func (floatVariable *FloatVariable) SetValue(value float32) {
-	floatVariable.Value = value
-	floatVariable.Empty = false
+func (variable *FloatVariable) SetValue(value float32) {
+	variable.Value = value
+	variable.Empty = false
+}
+
+// Unset the variable
+func (variable *FloatVariable) Unset() {
+	variable.Empty = true
+	var f float32
+	variable.Value = f
 }
 
 // FloatVariables collection type for float type variables
@@ -60,4 +67,20 @@ func (variables *FloatVariables) Contains(name VariableName) bool {
 		}
 	}
 	return false
+}
+
+// Unassigned return all unassigned variables
+func (variables *FloatVariables) Unassigned() FloatVariables {
+	unassigned := make(FloatVariables, 0)
+	for _, variable := range *variables {
+		if variable.Empty {
+			unassigned = append(unassigned, variable)
+		}
+	}
+	return unassigned
+}
+
+// Complete indicates if all variables have been assigned to
+func (variables *FloatVariables) Complete() bool {
+	return len(variables.Unassigned()) == 0
 }

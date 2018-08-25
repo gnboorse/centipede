@@ -16,9 +16,16 @@ func NewIntVariable(name VariableName, domain IntDomain) IntVariable {
 }
 
 // SetValue setter for IntVariable value field
-func (intVariable *IntVariable) SetValue(value int) {
-	intVariable.Value = value
-	intVariable.Empty = false
+func (variable *IntVariable) SetValue(value int) {
+	variable.Value = value
+	variable.Empty = false
+}
+
+// Unset the variable
+func (variable *IntVariable) Unset() {
+	variable.Empty = true
+	var i int
+	variable.Value = i
 }
 
 // IntVariables collection type for int type variables
@@ -60,4 +67,20 @@ func (variables *IntVariables) Contains(name VariableName) bool {
 		}
 	}
 	return false
+}
+
+// Unassigned return all unassigned variables
+func (variables *IntVariables) Unassigned() IntVariables {
+	unassigned := make(IntVariables, 0)
+	for _, variable := range *variables {
+		if variable.Empty {
+			unassigned = append(unassigned, variable)
+		}
+	}
+	return unassigned
+}
+
+// Complete indicates if all variables have been assigned to
+func (variables *IntVariables) Complete() bool {
+	return len(variables.Unassigned()) == 0
 }

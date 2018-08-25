@@ -45,6 +45,10 @@ func (constraint *IntConstraint) Satisfied(variables IntVariables) bool {
 	if !domainSatisfied {
 		panic("Variables do not satisfy the domains given.")
 	}
+
+	// for _, variable := range variables {
+
+	// }
 	// now finally call the constraint function
 	return constraint.constraintFunction(variables)
 }

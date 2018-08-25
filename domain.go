@@ -88,3 +88,5 @@ func (floatDomain *FloatDomain) Contains(value float32) bool {
 	}
 	return false
 }
+
+// todo: add generator methods for FloatDomain and StringDomain

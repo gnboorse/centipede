@@ -16,9 +16,16 @@ func NewStringVariable(name VariableName, domain StringDomain) StringVariable {
 }
 
 // SetValue setter for StringVariable value field
-func (stringVariable *StringVariable) SetValue(value string) {
-	stringVariable.Value = value
-	stringVariable.Empty = false
+func (variable *StringVariable) SetValue(value string) {
+	variable.Value = value
+	variable.Empty = false
+}
+
+// Unset the variable
+func (variable *StringVariable) Unset() {
+	variable.Empty = true
+	var s string
+	variable.Value = s
 }
 
 // StringVariables collection type for string type variables
@@ -60,4 +67,20 @@ func (variables *StringVariables) Contains(name VariableName) bool {
 		}
 	}
 	return false
+}
+
+// Unassigned return all unassigned variables
+func (variables *StringVariables) Unassigned() StringVariables {
+	unassigned := make(StringVariables, 0)
+	for _, variable := range *variables {
+		if variable.Empty {
+			unassigned = append(unassigned, variable)
+		}
+	}
+	return unassigned
+}
+
+// Complete indicates if all variables have been assigned to
+func (variables *StringVariables) Complete() bool {
+	return len(variables.Unassigned()) == 0
 }
