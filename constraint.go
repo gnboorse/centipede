@@ -4,6 +4,12 @@ import (
 	"fmt"
 )
 
+// Constraint CSP constraint considering integer variables
+type Constraint struct {
+	Vars               VariableNames
+	ConstraintFunction VariablesConstraintFunction
+}
+
 // Constraints collection type for Constraint
 type Constraints []Constraint
 
@@ -18,12 +24,6 @@ func (constraints *Constraints) AllSatisfied(variables Variables) bool {
 
 // VariablesConstraintFunction function used to determine validity of Variables
 type VariablesConstraintFunction func(variables Variables) bool
-
-// Constraint CSP constraint considering integer variables
-type Constraint struct {
-	Vars               VariableNames
-	constraintFunction VariablesConstraintFunction
-}
 
 // Satisfied checks to see if the given Constraint is satisfied by the variables presented
 func (constraint *Constraint) Satisfied(variables Variables) bool {
@@ -54,7 +54,7 @@ func (constraint *Constraint) Satisfied(variables Variables) bool {
 		}
 	}
 	// now finally call the constraint function
-	return constraint.constraintFunction(variables)
+	return constraint.ConstraintFunction(variables)
 }
 
 // Equals Constraint generator that checks if two vars are equal

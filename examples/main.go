@@ -3,8 +3,13 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println("------------------------------")
+	printLine()
 	MapColoringAustralia()
-	fmt.Println("------------------------------")
+	printLine()
+	IntegerConstraints()
+	printLine()
+}
 
+func printLine() {
+	fmt.Println("------------------------------")
 }
