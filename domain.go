@@ -1,7 +1,6 @@
 package centipede
 
 import (
-	"fmt"
 	"math"
 	"time"
 )
@@ -73,11 +72,6 @@ func Generator(inputDomain Domain, fx func(interface{}) interface{}) Domain {
 		outputDomain = append(outputDomain, fx(input))
 	}
 	return outputDomain
-}
-
-// String to string override
-func (domain *Domain) String() string {
-	return fmt.Sprintf("%#v %v", *domain, len(*domain))
 }
 
 // Contains slice contains method for Domain
