@@ -1,1 +1,2 @@
 go build .
+go install .

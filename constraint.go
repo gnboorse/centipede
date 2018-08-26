@@ -1,4 +1,4 @@
-package main
+package centipede
 
 import (
 	"fmt"
@@ -46,9 +46,13 @@ func (constraint *Constraint) Satisfied(variables Variables) bool {
 		panic("Variables do not satisfy the domains given.")
 	}
 
-	// for _, variable := range variables {
-
-	// }
+	// if the required variables for this constraint haven't been fully populated,
+	// pass the constraint
+	for _, varname := range constraint.Vars {
+		if variables.Find(varname).Empty {
+			return true
+		}
+	}
 	// now finally call the constraint function
 	return constraint.constraintFunction(variables)
 }
@@ -56,9 +60,6 @@ func (constraint *Constraint) Satisfied(variables Variables) bool {
 // Equals Constraint generator that checks if two vars are equal
 func Equals(var1 VariableName, var2 VariableName) Constraint {
 	return Constraint{VariableNames{var1, var2}, func(variables Variables) bool {
-		if variables.Find(var1).Empty || variables.Find(var2).Empty {
-			return true
-		}
 		return variables.Find(var1).Value == variables.Find(var2).Value
 	}}
 }
@@ -66,9 +67,6 @@ func Equals(var1 VariableName, var2 VariableName) Constraint {
 // NotEquals Constraint generator that checks if two vars are not equal
 func NotEquals(var1 VariableName, var2 VariableName) Constraint {
 	return Constraint{VariableNames{var1, var2}, func(variables Variables) bool {
-		if variables.Find(var1).Empty || variables.Find(var2).Empty {
-			return true
-		}
 		return variables.Find(var1).Value != variables.Find(var2).Value
 	}}
 }

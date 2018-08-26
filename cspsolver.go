@@ -1,4 +1,4 @@
-package main
+package centipede
 
 // CSPSolver struct for holding solver state
 type CSPSolver struct {

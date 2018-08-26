@@ -1,4 +1,4 @@
-package main
+package centipede
 
 // CSPState state object for CSP Solver
 type CSPState struct {
