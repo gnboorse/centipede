@@ -99,18 +99,18 @@ func (variables *Variables) Contains(name VariableName) bool {
 	return false
 }
 
-// Unassigned return all unassigned variables
-func (variables *Variables) Unassigned() Variables {
-	unassigned := make(Variables, 0)
+// Unassigned return the number of unassigned variables
+func (variables *Variables) Unassigned() int {
+	count := 0
 	for _, variable := range *variables {
 		if variable.Empty {
-			unassigned = append(unassigned, variable)
+			count++
 		}
 	}
-	return unassigned
+	return count
 }
 
 // Complete indicates if all variables have been assigned to
 func (variables *Variables) Complete() bool {
-	return len(variables.Unassigned()) == 0
+	return variables.Unassigned() == 0
 }

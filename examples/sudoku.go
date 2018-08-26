@@ -45,6 +45,7 @@ func Sudoku() {
 	constraints := make(centipede.Constraints, 0)
 
 	letters := [9]string{"A", "B", "C", "D", "E", "F", "G", "H", "I"}
+	tenDomain := centipede.IntRange(1, 10)
 
 	// configure variables and block constraints
 	for _, letter := range letters {
@@ -52,7 +53,7 @@ func Sudoku() {
 		for i := 1; i <= 9; i++ {
 			varName := centipede.VariableName(letter + strconv.Itoa(i))
 			// add vars like A1, A2, A3 ... A9, B1, B2, B3 ... B9 ... I9
-			vars = append(vars, centipede.NewVariable(varName, getDomain(varName)))
+			vars = append(vars, centipede.NewVariable(varName, tenDomain))
 			letterVars = append(letterVars, varName)
 		}
 		// for each block, add uniqueness constraint within block
@@ -93,10 +94,51 @@ func Sudoku() {
 		}
 	}
 
+	vars.SetValue("A1", 5)
+	vars.SetValue("A2", 3)
+	vars.SetValue("A4", 6)
+	vars.SetValue("A8", 9)
+	vars.SetValue("A9", 8)
+	vars.SetValue("B2", 7)
+	vars.SetValue("B4", 1)
+	vars.SetValue("B5", 9)
+	vars.SetValue("B6", 5)
+	vars.SetValue("C8", 6)
+	vars.SetValue("D1", 8)
+	vars.SetValue("D4", 4)
+	vars.SetValue("D7", 7)
+	vars.SetValue("E2", 6)
+	vars.SetValue("E4", 8)
+	vars.SetValue("E6", 3)
+	vars.SetValue("E8", 2)
+	vars.SetValue("F3", 3)
+	vars.SetValue("F6", 1)
+	vars.SetValue("F9", 6)
+	vars.SetValue("G2", 6)
+	vars.SetValue("H4", 4)
+	vars.SetValue("H5", 1)
+	vars.SetValue("H6", 9)
+	vars.SetValue("H8", 8)
+	vars.SetValue("I1", 2)
+	vars.SetValue("I2", 8)
+	vars.SetValue("I6", 5)
+	vars.SetValue("I8", 7)
+	vars.SetValue("I9", 9)
+
+	printLine()
+	for _, variable := range vars {
+		if variable.Empty {
+			fmt.Printf("variable = %v\n", variable)
+		}
+
+	}
+	printLine()
+	fmt.Println(constraints)
+
 	// solve the problem
-	solver := centipede.NewCSPSolver(vars, constraints, 500)
+	solver := centipede.NewCSPSolver(vars, constraints, vars.Unassigned())
 	begin := time.Now()
-	success := solver.Solve() // run the solution
+	success := solver.IterativeDeepeningSolve() // run the solution
 	elapsed := time.Since(begin)
 
 	// output results and time elapsed
@@ -110,74 +152,4 @@ func Sudoku() {
 		fmt.Printf("Could not find solution in %s\n", elapsed)
 	}
 
-}
-
-// prevent domain for certain variables from going
-// outside of known values in the puzzle
-// values here populated from: https://en.wikipedia.org/wiki/Sudoku#/media/File:Sudoku_Puzzle_by_L2G-20050714_standardized_layout.svg
-func getDomain(varName centipede.VariableName) centipede.Domain {
-	switch varName {
-	case "A1":
-		return centipede.Domain{5}
-	case "A2":
-		return centipede.Domain{3}
-	case "A4":
-		return centipede.Domain{6}
-	case "A8":
-		return centipede.Domain{9}
-	case "A9":
-		return centipede.Domain{8}
-	case "B2":
-		return centipede.Domain{7}
-	case "B4":
-		return centipede.Domain{1}
-	case "B5":
-		return centipede.Domain{9}
-	case "B6":
-		return centipede.Domain{5}
-	case "C8":
-		return centipede.Domain{6}
-	case "D1":
-		return centipede.Domain{8}
-	case "D4":
-		return centipede.Domain{4}
-	case "D7":
-		return centipede.Domain{7}
-	case "E2":
-		return centipede.Domain{6}
-	case "E4":
-		return centipede.Domain{8}
-	case "E6":
-		return centipede.Domain{3}
-	case "E8":
-		return centipede.Domain{2}
-	case "F3":
-		return centipede.Domain{3}
-	case "F6":
-		return centipede.Domain{1}
-	case "F9":
-		return centipede.Domain{6}
-	case "G2":
-		return centipede.Domain{6}
-	case "H4":
-		return centipede.Domain{4}
-	case "H5":
-		return centipede.Domain{1}
-	case "H6":
-		return centipede.Domain{9}
-	case "H8":
-		return centipede.Domain{8}
-	case "I1":
-		return centipede.Domain{2}
-	case "I2":
-		return centipede.Domain{8}
-	case "I6":
-		return centipede.Domain{5}
-	case "I8":
-		return centipede.Domain{7}
-	case "I9":
-		return centipede.Domain{9}
-	default:
-		return centipede.IntRange(1, 10)
-	}
 }

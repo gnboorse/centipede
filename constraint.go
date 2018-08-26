@@ -27,8 +27,11 @@ type Constraint struct {
 // Constraints collection type for Constraint
 type Constraints []Constraint
 
+// VariablesConstraintFunction function used to determine validity of Variables
+type VariablesConstraintFunction func(variables *Variables) bool
+
 // AllSatisfied check if a collection of Constraints are satisfied
-func (constraints *Constraints) AllSatisfied(variables Variables) bool {
+func (constraints *Constraints) AllSatisfied(variables *Variables) bool {
 	flag := true
 	for _, constraint := range *constraints {
 		flag = flag && constraint.Satisfied(variables)
@@ -36,11 +39,8 @@ func (constraints *Constraints) AllSatisfied(variables Variables) bool {
 	return flag
 }
 
-// VariablesConstraintFunction function used to determine validity of Variables
-type VariablesConstraintFunction func(variables Variables) bool
-
 // Satisfied checks to see if the given Constraint is satisfied by the variables presented
-func (constraint *Constraint) Satisfied(variables Variables) bool {
+func (constraint *Constraint) Satisfied(variables *Variables) bool {
 	constraintVariablesSatisfied := true
 	domainSatisfied := true
 
@@ -49,7 +49,7 @@ func (constraint *Constraint) Satisfied(variables Variables) bool {
 		constraintVariablesSatisfied = constraintVariablesSatisfied && (variables.Contains(varname))
 	}
 
-	for _, variable := range variables {
+	for _, variable := range *variables {
 		// make sure each Variable being passed in has a value consistent with its domain or is empty
 		domainSatisfied = domainSatisfied && (variable.Domain.Contains(variable.Value) || variable.Empty)
 	}
@@ -60,41 +60,46 @@ func (constraint *Constraint) Satisfied(variables Variables) bool {
 		panic("Variables do not satisfy the domains given.")
 	}
 
-	// if the required variables for this constraint haven't been fully populated,
-	// pass the constraint
-	for _, varname := range constraint.Vars {
-		if variables.Find(varname).Empty {
-			return true
-		}
-	}
 	// now finally call the constraint function
 	return constraint.ConstraintFunction(variables)
 }
 
 // Equals Constraint generator that checks if two vars are equal
 func Equals(var1 VariableName, var2 VariableName) Constraint {
-	return Constraint{VariableNames{var1, var2}, func(variables Variables) bool {
+	return Constraint{VariableNames{var1, var2}, func(variables *Variables) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
 		return variables.Find(var1).Value == variables.Find(var2).Value
 	}}
 }
 
 // NotEquals Constraint generator that checks if two vars are not equal
 func NotEquals(var1 VariableName, var2 VariableName) Constraint {
-	return Constraint{VariableNames{var1, var2}, func(variables Variables) bool {
+	return Constraint{VariableNames{var1, var2}, func(variables *Variables) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
 		return variables.Find(var1).Value != variables.Find(var2).Value
 	}}
 }
 
 // UnaryEquals Unary constraint that checks if var1 equals some constant
 func UnaryEquals(var1 VariableName, value interface{}) Constraint {
-	return Constraint{VariableNames{var1}, func(variables Variables) bool {
+	return Constraint{VariableNames{var1}, func(variables *Variables) bool {
+		if variables.Find(var1).Empty {
+			return true
+		}
 		return variables.Find(var1).Value == value
 	}}
 }
 
 // UnaryNotEquals Unary constraint that checks if var1 is not equal to some constant
 func UnaryNotEquals(var1 VariableName, value interface{}) Constraint {
-	return Constraint{VariableNames{var1}, func(variables Variables) bool {
+	return Constraint{VariableNames{var1}, func(variables *Variables) bool {
+		if variables.Find(var1).Empty {
+			return true
+		}
 		return variables.Find(var1).Value != value
 	}}
 }
@@ -124,7 +129,7 @@ func AllEquals(varnames ...VariableName) Constraint {
 	if len(varnames) <= 0 {
 		panic("Not enough variable names provided!")
 	}
-	return Constraint{varnames, func(variables Variables) bool {
+	return Constraint{varnames, func(variables *Variables) bool {
 		foundFirst := false
 		var first Variable
 		// find first non empty variable to compare all others to
@@ -153,7 +158,7 @@ func AllUnique(varnames ...VariableName) Constraint {
 	if len(varnames) <= 0 {
 		panic("Not enough variable names provided!")
 	}
-	return Constraint{varnames, func(variables Variables) bool {
+	return Constraint{varnames, func(variables *Variables) bool {
 		uniqueMap := make(map[interface{}]struct{})
 		for _, varname := range varnames {
 			next := variables.Find(varname)

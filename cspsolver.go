@@ -14,6 +14,8 @@
 
 package centipede
 
+import "fmt"
+
 // CSPSolver struct for holding solver state
 type CSPSolver struct {
 	State CSPState
@@ -26,7 +28,22 @@ func NewCSPSolver(vars Variables, constraints Constraints, maxDepth int) CSPSolv
 
 // Solve solves for values in the CSP
 func (solver *CSPSolver) Solve() bool {
-	return reduce(&solver.State, 0)
+	return reduce(&solver.State, 1)
+}
+
+// IterativeDeepeningSolve solve for values in the CSP with an interative deepening strategy
+func (solver *CSPSolver) IterativeDeepeningSolve() bool {
+	max := solver.State.MaxDepth
+	freshState := solver.State // state at beginning of solve
+	for i := 1; i <= max; i++ {
+		solver.State = freshState // reset to beginning state
+		solver.State.MaxDepth = i
+		fmt.Printf("Attempting to solve with max depth %v\n", i)
+		if solver.Solve() {
+			return true
+		}
+	}
+	return false
 }
 
 // implements backtracking search
@@ -40,20 +57,29 @@ func reduce(state *CSPState, depth int) bool {
 				// set variable
 				state.Vars[i].SetValue(option)
 				// check if this is valid
-				if state.Constraints.AllSatisfied(state.Vars) {
-					// check if complete
-					if state.Vars.Complete() {
-						// we have a full solution of valid values
-						return true
-					} else if depth >= state.MaxDepth {
-						// don't descend too far, bottom out recursion
-						return false
-					} else {
-						// go down another level
-						if reduce(state, depth+1) {
-							return true
-						} // else continue with the domain loop (Backtrack)
+				complete := state.Vars.Complete()
+				satisfied := state.Constraints.AllSatisfied(&state.Vars)
+				tooDeep := depth >= state.MaxDepth
+
+				if complete && satisfied {
+					// we have a full solution
+					return true
+				} else if complete && !satisfied {
+					// we have filled it in completely.
+					// keep looping over the domain, but if that fails, we'll bottom out
+					continue
+				} else if !complete && satisfied {
+					// we have hit our max limit.
+					// continue domain loop instead of going further down
+					if tooDeep {
+						continue
 					}
+					// go down a level to assign to another variable
+					if reduce(state, depth+1) {
+						return true
+					}
+				} else { // !complete && !satisfied
+					continue // keep looping over the domain, but if that fails we'll bottom out
 				}
 			}
 			// unset variable and try with a different one first

@@ -37,12 +37,14 @@ func IntegerConstraints() {
 		// using some constraint generators
 		centipede.AllUnique("A", "B", "C", "E"), // A != B != C != E
 		centipede.Equals("A", "D"),              // A = D
-
 		// here we implement a custom constraint
 		centipede.Constraint{Vars: centipede.VariableNames{"A", "E"}, // E = A * 2
-			ConstraintFunction: func(variables centipede.Variables) bool {
+			ConstraintFunction: func(variables *centipede.Variables) bool {
 				// here we have to use type assertion for numeric methods since
 				// Variable.Value is stored as interface{}
+				if variables.Find("E").Empty || variables.Find("A").Empty {
+					return true
+				}
 				return variables.Find("E").Value.(int) == variables.Find("A").Value.(int)*2
 			}},
 	}
