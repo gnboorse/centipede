@@ -71,6 +71,20 @@ func NotEquals(var1 VariableName, var2 VariableName) Constraint {
 	}}
 }
 
+// UnaryEquals Unary constraint that checks if var1 equals some constant
+func UnaryEquals(var1 VariableName, value interface{}) Constraint {
+	return Constraint{VariableNames{var1}, func(variables Variables) bool {
+		return variables.Find(var1).Value == value
+	}}
+}
+
+// UnaryNotEquals Unary constraint that checks if var1 is not equal to some constant
+func UnaryNotEquals(var1 VariableName, value interface{}) Constraint {
+	return Constraint{VariableNames{var1}, func(variables Variables) bool {
+		return variables.Find(var1).Value != value
+	}}
+}
+
 // // LessThan Constraint generator that checks if first variable is less than second variable
 // func LessThan(var1 VariableName, var2 VariableName) Constraint {
 // 	return Constraint{VariableNames{var1, var1}, func(variables Variables) bool {

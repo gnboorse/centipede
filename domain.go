@@ -8,6 +8,16 @@ import (
 // Domain domain object
 type Domain []interface{}
 
+// Contains slice contains method for Domain
+func (domain *Domain) Contains(value interface{}) bool {
+	for _, item := range *domain {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
 // IntRange returns a slice of integers in the desired range with a step of 1
 func IntRange(start int, end int) Domain {
 	return IntRangeStep(start, end, 1)
@@ -72,14 +82,4 @@ func Generator(inputDomain Domain, fx func(interface{}) interface{}) Domain {
 		outputDomain = append(outputDomain, fx(input))
 	}
 	return outputDomain
-}
-
-// Contains slice contains method for Domain
-func (domain *Domain) Contains(value interface{}) bool {
-	for _, item := range *domain {
-		if item == value {
-			return true
-		}
-	}
-	return false
 }
