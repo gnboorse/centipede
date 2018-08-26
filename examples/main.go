@@ -22,6 +22,8 @@ func main() {
 	printLine()
 	IntegerConstraints()
 	printLine()
+	Sudoku()
+	printLine()
 }
 
 func printLine() {
