@@ -18,6 +18,10 @@ Currently, this is very much a **work in progress**. Here are some of its limita
 
 For example code, see the `examples/` directory.
 
+### Documentation
+
+Godocs are available [here](docs/README.md).
+
 ## Installation
 
 ```bash
