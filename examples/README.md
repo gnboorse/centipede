@@ -13,3 +13,7 @@ go build . && ./examples
 ## Examples
 
 - `mapcoloringaustralia.go` - This example solves the classic [map-coloring problem](https://en.wikipedia.org/wiki/Four_color_theorem) in three colors for the provinces of Australia.
+
+- `integerconstraints.go` - This example sets a number of variables `A`, `B`, `C`, `D`, and `E`, and searches for a solution with the following constraints: `A != B != C != E`, `A == D`, and `E == 2 * A`
+
+
