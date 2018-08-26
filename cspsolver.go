@@ -1,22 +1,22 @@
 package main
 
-// IntCSPSolver struct for holding solver state
-type IntCSPSolver struct {
-	State IntCSPState
+// CSPSolver struct for holding solver state
+type CSPSolver struct {
+	State CSPState
 }
 
-// NewIntCSPSolver create a solver
-func NewIntCSPSolver(vars IntVariables, constraints IntConstraints, maxDepth int) IntCSPSolver {
-	return IntCSPSolver{IntCSPState{vars, constraints, maxDepth}}
+// NewCSPSolver create a solver
+func NewCSPSolver(vars Variables, constraints Constraints, maxDepth int) CSPSolver {
+	return CSPSolver{CSPState{vars, constraints, maxDepth}}
 }
 
 // Solve solves for values in the CSP
-func (solver *IntCSPSolver) Solve() bool {
+func (solver *CSPSolver) Solve() bool {
 	return reduce(&solver.State, 0)
 }
 
 // implements backtracking search
-func reduce(state *IntCSPState, depth int) bool {
+func reduce(state *CSPState, depth int) bool {
 	// iterate over unassigned variables
 	for i, variable := range state.Vars {
 		// ignore variables that have been set

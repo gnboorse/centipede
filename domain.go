@@ -4,89 +4,61 @@ import (
 	"fmt"
 )
 
-// StringDomain domain of string objects
-type StringDomain []string
+// Domain domain object
+type Domain []interface{}
 
-// IntDomain domain of int objects
-type IntDomain []int
-
-// FloatDomain domain of float32 objects
-type FloatDomain []float32
-
-// IntRange returns a slice of integers in the desired range with a step of 1
-func IntRange(start int, end int) IntDomain {
-	return IntRangeStep(start, end, 1)
+// Range returns a slice of integers in the desired range with a step of 1
+func Range(start int, end int) Domain {
+	return RangeStep(start, end, 1)
 }
 
-// IntRangeStep returns a slice of integers in the desired range with the given step
-func IntRangeStep(start int, end int, step int) IntDomain {
+// RangeStep returns a slice of integers in the desired range with the given step
+func RangeStep(start int, end int, step int) Domain {
 	rangeLength := (end - start) / step
 	mod := (end - start) % step
 	if mod > 0 {
 		rangeLength++
 	}
-	intDomain := make(IntDomain, rangeLength, rangeLength)
+	domain := make(Domain, rangeLength, rangeLength)
 	for i := int(0); i < rangeLength; i++ {
-		intDomain[i] = i*step + start
+		domain[i] = i*step + start
 	}
-	return intDomain
+	return domain
 }
 
-// IntGenerator generates a series of numbers on the domain of [start, end)
+// Generator generates a series of numbers on the domain of [start, end)
 // with a step size defaulting to 1
-func IntGenerator(start int, end int, fx func(int) int) IntDomain {
-	return IntGeneratorVariableStep(start, end, 1, fx)
+func Generator(start int, end int, fx func(int) int) Domain {
+	return GeneratorVariableStep(start, end, 1, fx)
 }
 
-// IntGeneratorVariableStep generates a series of numbers on the domain of [start, end)
+// GeneratorVariableStep generates a series of numbers on the domain of [start, end)
 // with a given step size for the domain
-func IntGeneratorVariableStep(start int, end int, step int, fx func(int) int) IntDomain {
+func GeneratorVariableStep(start int, end int, step int, fx func(int) int) Domain {
 	rangeLength := (end - start) / step
 	mod := (end - start) % step
-	intDomain := make(IntDomain, rangeLength, rangeLength)
+	domain := make(Domain, rangeLength, rangeLength)
 	if mod > 0 {
 		rangeLength++
 	}
 	for i := int(0); i < rangeLength; i++ {
 		// set to function value
-		intDomain[i] = fx(i*step + start)
+		domain[i] = fx(i*step + start)
 	}
-	return intDomain
+	return domain
 }
 
 // String to string override
-func (intDomain *IntDomain) String() string {
-	return fmt.Sprintf("%#v %v", *intDomain, len(*intDomain))
+func (domain *Domain) String() string {
+	return fmt.Sprintf("%#v %v", *domain, len(*domain))
 }
 
-// Contains slice contains method for IntDomain
-func (intDomain *IntDomain) Contains(value int) bool {
-	for _, item := range *intDomain {
+// Contains slice contains method for Domain
+func (domain *Domain) Contains(value interface{}) bool {
+	for _, item := range *domain {
 		if item == value {
 			return true
 		}
 	}
 	return false
 }
-
-// Contains slice contains method for StringDomain
-func (stringDomain *StringDomain) Contains(value string) bool {
-	for _, item := range *stringDomain {
-		if item == value {
-			return true
-		}
-	}
-	return false
-}
-
-// Contains slice contains method for FloatDomain
-func (floatDomain *FloatDomain) Contains(value float32) bool {
-	for _, item := range *floatDomain {
-		if item == value {
-			return true
-		}
-	}
-	return false
-}
-
-// todo: add generator methods for FloatDomain and StringDomain
