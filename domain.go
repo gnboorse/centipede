@@ -2,18 +2,34 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 // Domain domain object
 type Domain []interface{}
 
-// Range returns a slice of integers in the desired range with a step of 1
-func Range(start int, end int) Domain {
-	return RangeStep(start, end, 1)
+// FloatRange returns a slice of integers in the desired range with a step of 1
+func FloatRange(start float64, end float64) Domain {
+	return FloatRangeStep(start, end, 1.0)
 }
 
-// RangeStep returns a slice of integers in the desired range with the given step
-func RangeStep(start int, end int, step int) Domain {
+// FloatRangeStep returns a slice of integers in the desired range with the given step
+func FloatRangeStep(start float64, end float64, step float64) Domain {
+	rangeLength := int(math.Ceil((end - start) / step))
+	domain := make(Domain, rangeLength, rangeLength)
+	for i := int(0); i < rangeLength; i++ {
+		domain[i] = float64(i)*step + start
+	}
+	return domain
+}
+
+// IntRange returns a slice of integers in the desired range with a step of 1
+func IntRange(start int, end int) Domain {
+	return IntRangeStep(start, end, 1)
+}
+
+// IntRangeStep returns a slice of integers in the desired range with the given step
+func IntRangeStep(start int, end int, step int) Domain {
 	rangeLength := (end - start) / step
 	mod := (end - start) % step
 	if mod > 0 {
@@ -26,26 +42,14 @@ func RangeStep(start int, end int, step int) Domain {
 	return domain
 }
 
-// Generator generates a series of numbers on the domain of [start, end)
-// with a step size defaulting to 1
-func Generator(start int, end int, fx func(int) int) Domain {
-	return GeneratorVariableStep(start, end, 1, fx)
-}
-
-// GeneratorVariableStep generates a series of numbers on the domain of [start, end)
-// with a given step size for the domain
-func GeneratorVariableStep(start int, end int, step int, fx func(int) int) Domain {
-	rangeLength := (end - start) / step
-	mod := (end - start) % step
-	domain := make(Domain, rangeLength, rangeLength)
-	if mod > 0 {
-		rangeLength++
+// Generator generates a Domain from another input domain
+// and a function f(x). For example:
+func Generator(inputDomain Domain, fx func(interface{}) interface{}) Domain {
+	outputDomain := make(Domain, 0)
+	for _, input := range inputDomain {
+		outputDomain = append(outputDomain, fx(input))
 	}
-	for i := int(0); i < rangeLength; i++ {
-		// set to function value
-		domain[i] = fx(i*step + start)
-	}
-	return domain
+	return outputDomain
 }
 
 // String to string override
