@@ -34,7 +34,13 @@ func (state *CSPState) SimplifyPreAssignment() {
 							// safe to assume that variable and constrainedVariable
 							// cannot both have this value. Remove this value from
 							// the domain of constrainedVariable
-							state.Vars.SetDomain(constrainedVariable.Name, constrainedVariable.Domain.Remove(variable.Value))
+							restrictedDomain := constrainedVariable.Domain.Remove(variable.Value)
+							state.Vars.SetDomain(constrainedVariable.Name, restrictedDomain)
+							// if domain has only one value, set the value of the variable to
+							// avoid further complexity
+							if len(restrictedDomain) == 1 {
+								state.Vars.SetValue(constrainedVariable.Name, restrictedDomain[0])
+							}
 						}
 					}
 				}

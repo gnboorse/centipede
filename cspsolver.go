@@ -16,38 +16,23 @@ package centipede
 
 import "fmt"
 
-// CSPSolver struct for holding solver state
-type CSPSolver struct {
+// BackTrackingCSPSolver struct for holding solver state
+type BackTrackingCSPSolver struct {
 	State CSPState
 }
 
-// NewCSPSolver create a solver
-func NewCSPSolver(vars Variables, constraints Constraints, maxDepth int) CSPSolver {
-	return CSPSolver{CSPState{vars, constraints, maxDepth}}
+// NewBackTrackingCSPSolver create a solver
+func NewBackTrackingCSPSolver(vars Variables, constraints Constraints) BackTrackingCSPSolver {
+	return BackTrackingCSPSolver{CSPState{vars, constraints}}
 }
 
 // Solve solves for values in the CSP
-func (solver *CSPSolver) Solve() bool {
-	return reduce(&solver.State, 1)
-}
-
-// IterativeDeepeningSolve solve for values in the CSP with an interative deepening strategy
-func (solver *CSPSolver) IterativeDeepeningSolve() bool {
-	max := solver.State.MaxDepth
-	freshState := solver.State // state at beginning of solve
-	for i := 1; i <= max; i++ {
-		solver.State = freshState // reset to beginning state
-		solver.State.MaxDepth = i
-		fmt.Printf("Attempting to solve with max depth %v\n", i)
-		if solver.Solve() {
-			return true
-		}
-	}
-	return false
+func (solver *BackTrackingCSPSolver) Solve() bool {
+	return reduce(&solver.State)
 }
 
 // implements backtracking search
-func reduce(state *CSPState, depth int) bool {
+func reduce(state *CSPState) bool {
 	// iterate over unassigned variables
 	for i, variable := range state.Vars {
 		// ignore variables that have been set
@@ -56,10 +41,10 @@ func reduce(state *CSPState, depth int) bool {
 			for _, option := range variable.Domain {
 				// set variable
 				state.Vars[i].SetValue(option)
+				fmt.Printf("Set variable %#v\n", state.Vars[i])
 				// check if this is valid
 				complete := state.Vars.Complete()
 				satisfied := state.Constraints.AllSatisfied(&state.Vars)
-				tooDeep := depth >= state.MaxDepth
 
 				if complete && satisfied {
 					// we have a full solution
@@ -69,13 +54,8 @@ func reduce(state *CSPState, depth int) bool {
 					// keep looping over the domain, but if that fails, we'll bottom out
 					continue
 				} else if !complete && satisfied {
-					// we have hit our max limit.
-					// continue domain loop instead of going further down
-					if tooDeep {
-						continue
-					}
 					// go down a level to assign to another variable
-					if reduce(state, depth+1) {
+					if reduce(state) {
 						return true
 					}
 				} else { // !complete && !satisfied

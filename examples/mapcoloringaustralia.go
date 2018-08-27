@@ -54,7 +54,7 @@ func MapColoringAustralia() {
 	}
 
 	// create the solver with a maximum depth of 500
-	solver := centipede.NewCSPSolver(vars, constraints, 500)
+	solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
 	begin := time.Now()
 	success := solver.Solve() // run the solution
 	elapsed := time.Since(begin)

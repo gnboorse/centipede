@@ -9,7 +9,7 @@ There is also a very informative slide deck about CSPs available from Stanford U
 Currently, this is very much a **work in progress**. Here are some of its limitations:
 
 - Numeric comparison constraint (less than, greater than, etc.) generators are not yet supported, but are on the way. Variables currently use the Go `interface{}` type for their actual values, so equality and inequality are supported out of the box.
-- The search algorithm in use right now by the `CSPSolver` is a very simple implementation of [backtracking search](https://en.wikipedia.org/wiki/Backtracking), but I have future plans to optimize and improve this using [Arc consistency](https://en.wikipedia.org/wiki/Local_consistency#Arc_consistency). 
+- The search algorithm in use right now by the `BackTrackingCSPSolver` is a very simple implementation of [backtracking search](https://en.wikipedia.org/wiki/Backtracking), but I have future plans to optimize and improve this using [Arc consistency](https://en.wikipedia.org/wiki/Local_consistency#Arc_consistency). 
 - I have plans to implement the minimum remaining values (MRV) heuristic and the least constraining value (LCV) heuristic.
 - Unit tests need to be written. It would also be nice to have some better documentation.
 

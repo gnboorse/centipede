@@ -50,7 +50,7 @@ func IntegerConstraints() {
 	}
 
 	// solve the problem
-	solver := centipede.NewCSPSolver(vars, constraints, 500)
+	solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
 	begin := time.Now()
 	success := solver.Solve() // run the solution
 	elapsed := time.Since(begin)
