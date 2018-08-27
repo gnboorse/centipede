@@ -10,6 +10,7 @@ import (
 // a given value, remove that value from the domain of all variables
 // mutually exclusive to it, i.e. if A != B and B = 2, remove 2
 // from the domain of A.
+// Use of this algorith is not recommended. Enforce arc consistency instead.
 func (state *CSPState) SimplifyPreAssignment() {
 
 	for _, variable := range state.Vars {

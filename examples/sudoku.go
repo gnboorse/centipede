@@ -38,6 +38,8 @@ import (
 // [G1 G2 G3 H1 H2 H3 I1 I2 I3]
 // [G4 G5 G6 H4 H5 H6 I4 I5 I6]
 // [G7 G8 G9 H7 H8 H9 I7 I8 I9]
+// This solution enforces Arc consistency on all binary constraints in the problem,
+// resulting in a very fast solve
 func Sudoku() {
 
 	// initialize variables

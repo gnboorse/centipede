@@ -5,24 +5,24 @@
 
 ## Usage
 
-#### type CSPSolver
+#### type BackTrackingCSPSolver
 
-    type CSPSolver struct {
+    type BackTrackingCSPSolver struct {
     	State CSPState
     }
 
 
-CSPSolver struct for holding solver state
+BackTrackingCSPSolver struct for holding solver state
 
-#### func  NewCSPSolver
+#### func  NewBackTrackingCSPSolver
 
-    func NewCSPSolver(vars Variables, constraints Constraints, maxDepth int) CSPSolver
+    func NewBackTrackingCSPSolver(vars Variables, constraints Constraints) BackTrackingCSPSolver
 
-NewCSPSolver create a solver
+NewBackTrackingCSPSolver create a solver
 
-#### func (*CSPSolver) Solve
+#### func (*BackTrackingCSPSolver) Solve
 
-    func (solver *CSPSolver) Solve() bool
+    func (solver *BackTrackingCSPSolver) Solve() bool
 
 Solve solves for values in the CSP
 
@@ -31,11 +31,28 @@ Solve solves for values in the CSP
     type CSPState struct {
     	Vars        Variables
     	Constraints Constraints
-    	MaxDepth    int
     }
 
 
 CSPState state object for CSP Solver
+
+#### func (*CSPState) MakeArcConsistent
+
+    func (state *CSPState) MakeArcConsistent()
+
+MakeArcConsistent algorithm based off of AC-3 used to make the given CSP fully
+arc consistent. https://en.wikipedia.org/wiki/AC-3_algorithm
+
+#### func (*CSPState) SimplifyPreAssignment
+
+    func (state *CSPState) SimplifyPreAssignment()
+
+SimplifyPreAssignment basic constraint propagation algorithm used to simplify
+variable domains before solving based on variables already assigned to.
+Condition: if a variable has been assigned to with a given value, remove that
+value from the domain of all variables mutually exclusive to it, i.e. if A != B
+and B = 2, remove 2 from the domain of A. Use of this algorith is not
+recommended. Enforce arc consistency instead.
 
 #### type Constraint
 
@@ -46,18 +63,6 @@ CSPState state object for CSP Solver
 
 
 Constraint CSP constraint considering integer variables
-
-#### func  AllEquals
-
-    func AllEquals(varnames ...VariableName) Constraint
-
-AllEquals Constraint generator that checks that all given variables are equal
-
-#### func  AllUnique
-
-    func AllUnique(varnames ...VariableName) Constraint
-
-AllUnique Constraint generator to check if all variable values are unique
 
 #### func  Equals
 
@@ -86,7 +91,7 @@ constant
 
 #### func (*Constraint) Satisfied
 
-    func (constraint *Constraint) Satisfied(variables Variables) bool
+    func (constraint *Constraint) Satisfied(variables *Variables) bool
 
 Satisfied checks to see if the given Constraint is satisfied by the variables
 presented
@@ -98,11 +103,36 @@ presented
 
 Constraints collection type for Constraint
 
+#### func  AllEquals
+
+    func AllEquals(varnames ...VariableName) Constraints
+
+AllEquals Constraint generator that checks that all given variables are equal
+
+#### func  AllUnique
+
+    func AllUnique(varnames ...VariableName) Constraints
+
+AllUnique Constraint generator to check if all variable values are unique
+
 #### func (*Constraints) AllSatisfied
 
-    func (constraints *Constraints) AllSatisfied(variables Variables) bool
+    func (constraints *Constraints) AllSatisfied(variables *Variables) bool
 
 AllSatisfied check if a collection of Constraints are satisfied
+
+#### func (*Constraints) FilterByName
+
+    func (constraints *Constraints) FilterByName(name VariableName) Constraints
+
+FilterByName return all constraints related to a particular variable name
+
+#### func (*Constraints) FilterByOrder
+
+    func (constraints *Constraints) FilterByOrder(order int) Constraints
+
+FilterByOrder return all constraints with the given order (number of related
+variables)
 
 #### type Domain
 
@@ -163,6 +193,12 @@ TimeRangeStep get the range of time between start to end with step as a Duration
 
 Contains slice contains method for Domain
 
+#### func (Domain) Remove
+
+    func (domain Domain) Remove(value interface{}) Domain
+
+Remove given a value and return the updated domain
+
 #### type Variable
 
     type Variable struct {
@@ -180,6 +216,12 @@ Variable indicates a CSP variable of interface{} type
     func NewVariable(name VariableName, domain Domain) Variable
 
 NewVariable constructor for Variable type
+
+#### func (*Variable) SetDomain
+
+    func (variable *Variable) SetDomain(domain Domain)
+
+SetDomain set the domain of the given variable
 
 #### func (*Variable) SetValue
 
@@ -238,6 +280,12 @@ Contains slice contains method for Variables
 
 Find find an Variable by name in an Variables collection
 
+#### func (*Variables) SetDomain
+
+    func (variables *Variables) SetDomain(name VariableName, domain Domain)
+
+SetDomain set the domain of the given variable by name
+
 #### func (*Variables) SetValue
 
     func (variables *Variables) SetValue(name VariableName, value interface{})
@@ -246,13 +294,19 @@ SetValue setter for Variables collection
 
 #### func (*Variables) Unassigned
 
-    func (variables *Variables) Unassigned() Variables
+    func (variables *Variables) Unassigned() int
 
-Unassigned return all unassigned variables
+Unassigned return the number of unassigned variables
+
+#### func (*Variables) Unset
+
+    func (variables *Variables) Unset(name VariableName)
+
+Unset unset a variable with the given name
 
 #### type VariablesConstraintFunction
 
-    type VariablesConstraintFunction func(variables Variables) bool
+    type VariablesConstraintFunction func(variables *Variables) bool
 
 
 VariablesConstraintFunction function used to determine validity of Variables
