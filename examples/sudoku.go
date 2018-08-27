@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gnboorse/centipede"
@@ -129,20 +130,38 @@ func Sudoku() {
 
 	// create solver
 	solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
-	// simplify variable domains following initial assignment
-	solver.State.MakeArcConsistent()
 
 	begin := time.Now()
+	// simplify variable domains following initial assignment
+	solver.State.MakeArcConsistent()
 	success := solver.Solve() // run the solution
 	elapsed := time.Since(begin)
 
 	// output results and time elapsed
 	if success {
 		fmt.Printf("Found solution in %s\n", elapsed)
-		for _, variable := range solver.State.Vars {
-			// print out values for each variable
-			fmt.Printf("Variable %v = %v\n", variable.Name, variable.Value)
+		fmt.Println("Final sudoku solution:")
+		// pretty-print sudoku puzzle
+		for _, letterSet := range rowLetterSets {
+			for _, numberSet := range rowNumberSets {
+				fmt.Println(strings.Repeat("-", 8*9+2))
+				fmt.Printf("|")
+				for _, letter := range letterSet {
+					for _, number := range numberSet {
+						varName := centipede.VariableName(letter + strconv.Itoa(number))
+						variable := solver.State.Vars.Find(varName)
+						fmt.Printf(" (%v %v) ", variable.Name, variable.Value)
+					}
+				}
+				fmt.Printf("|\n")
+
+			}
 		}
+		fmt.Println(strings.Repeat("-", 8*9+2))
+		// for _, variable := range solver.State.Vars {
+		// 	// print out values for each variable
+		// 	fmt.Printf("Variable %v = %v\n", variable.Name, variable.Value)
+		// }
 	} else {
 		fmt.Printf("Could not find solution in %s\n", elapsed)
 	}
