@@ -14,8 +14,6 @@
 
 package centipede
 
-import "fmt"
-
 // BackTrackingCSPSolver struct for holding solver state
 type BackTrackingCSPSolver struct {
 	State CSPState
@@ -55,7 +53,6 @@ func reduce(state *CSPState) bool {
 				} else if !complete && satisfied {
 					// go down a level to assign to another variable
 					// fmt.Printf("Set variable with %v left unset, %#v\n", state.Vars.Unassigned(), state.Vars[i])
-					printVars(&state.Vars)
 					if reduce(state) {
 						return true
 					}
@@ -69,12 +66,4 @@ func reduce(state *CSPState) bool {
 
 	}
 	return false
-}
-
-func printVars(vars *Variables) {
-	fmt.Printf("\n\n ==>")
-	for _, v := range *vars {
-		fmt.Printf(" (%v = %v) ", v.Name, v.Value)
-	}
-	fmt.Printf("\n")
 }

@@ -17,6 +17,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gnboorse/centipede"
 )
@@ -124,36 +125,24 @@ func Sudoku() {
 	vars.SetValue("I8", 7)
 	vars.SetValue("I9", 9)
 
-	fmt.Println(constraints)
-
-	// solve the problem
+	// create solver
 	solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
 	// simplify variable domains following initial assignment
-	solver.State.SimplifyPreAssignment()
-	printLine()
-	runningMult := 1
-	for _, variable := range vars {
-		fmt.Printf("variable = %v\n", variable)
-		if variable.Empty {
-			runningMult *= len(variable.Domain)
+	solver.State.MakeArcConsistent()
+
+	begin := time.Now()
+	success := solver.Solve() // run the solution
+	elapsed := time.Since(begin)
+
+	// output results and time elapsed
+	if success {
+		fmt.Printf("Found solution in %s\n", elapsed)
+		for _, variable := range solver.State.Vars {
+			// print out values for each variable
+			fmt.Printf("Variable %v = %v\n", variable.Name, variable.Value)
 		}
+	} else {
+		fmt.Printf("Could not find solution in %s\n", elapsed)
 	}
-	printLine()
-	fmt.Printf("Possible iterations = %v\n", runningMult)
-
-	// begin := time.Now()
-	// success := solver.Solve() // run the solution
-	// elapsed := time.Since(begin)
-
-	// // output results and time elapsed
-	// if success {
-	// 	fmt.Printf("Found solution in %s\n", elapsed)
-	// 	for _, variable := range solver.State.Vars {
-	// 		// print out values for each variable
-	// 		fmt.Printf("Variable %v = %v\n", variable.Name, variable.Value)
-	// 	}
-	// } else {
-	// 	fmt.Printf("Could not find solution in %s\n", elapsed)
-	// }
 
 }
