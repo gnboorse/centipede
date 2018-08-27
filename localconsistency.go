@@ -1,0 +1,46 @@
+package centipede
+
+// SimplifyPreAssignment constraint propagation algorithm used to
+// simplify variable domains before solving based on variables already
+// assigned to. Condition: if a variable has been assigned to with
+// a given value, remove that value from the domain of all variables
+// mutually exclusive to it, i.e. if A != B and B = 2, remove 2
+// from the domain of A.
+func (state *CSPState) SimplifyPreAssignment() {
+
+	for _, variable := range state.Vars {
+		if !variable.Empty { // assigned to
+			// get all constraints associated with this variable
+			assignedConstraints := state.Constraints.FilterByName(variable.Name)
+			for _, assignedConstraint := range assignedConstraints {
+				for _, constraintVarName := range assignedConstraint.Vars {
+					// don't compare the variable in question to itself
+					if constraintVarName == variable.Name {
+						continue
+					}
+					constrainedVariable := state.Vars.Find(constraintVarName)
+					// continue if this is one of the variables already assigned to
+					if !constrainedVariable.Empty {
+						continue
+					}
+					// check to see if the assigned value is a possibility
+					// for the unassigned variable we're comparing too
+					if constrainedVariable.Domain.Contains(variable.Value) {
+						resultBefore := assignedConstraint.ConstraintFunction(&state.Vars)
+						state.Vars.SetValue(constrainedVariable.Name, variable.Value)
+						resultAfter := assignedConstraint.ConstraintFunction(&state.Vars)
+						state.Vars.Unset(constrainedVariable.Name)
+						if resultBefore && !resultAfter {
+							// safe to assume that variable and constrainedVariable
+							// cannot both have this value. Remove this value from
+							// the domain of constrainedVariable
+							state.Vars.SetDomain(constrainedVariable.Name, constrainedVariable.Domain.Remove(variable.Value))
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// todo: add support here for Node consistency, true Arc consistency, and some kind of satisfiability algorithm.

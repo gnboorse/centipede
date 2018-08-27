@@ -54,8 +54,12 @@ func (variable *Variable) SetValue(value interface{}) {
 // Unset the variable
 func (variable *Variable) Unset() {
 	variable.Empty = true
-	var i interface{}
-	variable.Value = i
+	variable.Value = nil
+}
+
+// SetDomain set the domain of the given variable
+func (variable *Variable) SetDomain(domain Domain) {
+	variable.Domain = domain
 }
 
 // Variables collection type for interface{} type variables
@@ -75,6 +79,41 @@ func (variables *Variables) SetValue(name VariableName, value interface{}) {
 	} else {
 		(*variables)[foundIndex].Value = value
 		(*variables)[foundIndex].Empty = false
+
+	}
+}
+
+// Unset unset a variable with the given name
+func (variables *Variables) Unset(name VariableName) {
+	foundIndex := -1
+
+	for index, variable := range *variables {
+		if variable.Name == name {
+			foundIndex = index
+		}
+	}
+	if !(foundIndex >= 0) {
+		panic(fmt.Sprintf("Variable not found by name %v in variables %v", name, variables))
+	} else {
+		(*variables)[foundIndex].Value = nil
+		(*variables)[foundIndex].Empty = true
+
+	}
+}
+
+// SetDomain set the domain of the given variable by name
+func (variables *Variables) SetDomain(name VariableName, domain Domain) {
+	foundIndex := -1
+
+	for index, variable := range *variables {
+		if variable.Name == name {
+			foundIndex = index
+		}
+	}
+	if !(foundIndex >= 0) {
+		panic(fmt.Sprintf("Variable not found by name %v in variables %v", name, variables))
+	} else {
+		(*variables)[foundIndex].Domain = domain
 
 	}
 }

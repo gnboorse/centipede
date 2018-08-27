@@ -32,6 +32,20 @@ func (domain *Domain) Contains(value interface{}) bool {
 	return false
 }
 
+// Remove given a value and return the updated domain
+func (domain Domain) Remove(value interface{}) Domain {
+	newDomain := make(Domain, 0)
+	for _, item := range domain {
+		if item != value {
+			newDomain = append(newDomain, item)
+		}
+	}
+	if len(newDomain) == len(domain) { // domain unchanged
+		return domain
+	}
+	return newDomain
+}
+
 // IntRange returns a slice of integers in the desired range with a step of 1
 func IntRange(start int, end int) Domain {
 	return IntRangeStep(start, end, 1)

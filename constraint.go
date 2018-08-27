@@ -39,6 +39,28 @@ func (constraints *Constraints) AllSatisfied(variables *Variables) bool {
 	return flag
 }
 
+// FilterByName return all constraints related to a particular variable name
+func (constraints *Constraints) FilterByName(name VariableName) Constraints {
+	filtered := make(Constraints, 0)
+	for _, constraint := range *constraints {
+		if constraint.Vars.Contains(name) {
+			filtered = append(filtered, constraint)
+		}
+	}
+	return filtered
+}
+
+// FilterByOrder return all constraints with the given order (number of related variables)
+func (constraints *Constraints) FilterByOrder(order int) Constraints {
+	filtered := make(Constraints, 0)
+	for _, constraint := range *constraints {
+		if len(constraint.Vars) == order {
+			filtered = append(filtered, constraint)
+		}
+	}
+	return filtered
+}
+
 // Satisfied checks to see if the given Constraint is satisfied by the variables presented
 func (constraint *Constraint) Satisfied(variables *Variables) bool {
 	constraintVariablesSatisfied := true
