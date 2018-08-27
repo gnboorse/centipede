@@ -41,7 +41,6 @@ func reduce(state *CSPState) bool {
 			for _, option := range variable.Domain {
 				// set variable
 				state.Vars[i].SetValue(option)
-				fmt.Printf("Set variable %#v\n", state.Vars[i])
 				// check if this is valid
 				complete := state.Vars.Complete()
 				satisfied := state.Constraints.AllSatisfied(&state.Vars)
@@ -55,6 +54,8 @@ func reduce(state *CSPState) bool {
 					continue
 				} else if !complete && satisfied {
 					// go down a level to assign to another variable
+					// fmt.Printf("Set variable with %v left unset, %#v\n", state.Vars.Unassigned(), state.Vars[i])
+					printVars(&state.Vars)
 					if reduce(state) {
 						return true
 					}
@@ -68,4 +69,12 @@ func reduce(state *CSPState) bool {
 
 	}
 	return false
+}
+
+func printVars(vars *Variables) {
+	fmt.Printf("\n\n ==>")
+	for _, v := range *vars {
+		fmt.Printf(" (%v = %v) ", v.Name, v.Value)
+	}
+	fmt.Printf("\n")
 }

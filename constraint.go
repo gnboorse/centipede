@@ -147,50 +147,37 @@ func UnaryNotEquals(var1 VariableName, value interface{}) Constraint {
 // }
 
 // AllEquals Constraint generator that checks that all given variables are equal
-func AllEquals(varnames ...VariableName) Constraint {
-	if len(varnames) <= 0 {
-		panic("Not enough variable names provided!")
-	}
-	return Constraint{varnames, func(variables *Variables) bool {
-		foundFirst := false
-		var first Variable
-		// find first non empty variable to compare all others to
-		for _, varname := range varnames {
-			next := variables.Find(varname)
-			if !next.Empty {
-				first = next
-				foundFirst = true
-			}
-		}
-		if !foundFirst {
-			return true // all variables are empty
-		}
-		flag := true
-		// compare all variables to the first non-empty one, ignoring empty variables
-		for _, varname := range varnames {
-			next := variables.Find(varname)
-			flag = flag && (first.Value == next.Value || next.Empty)
-		}
-		return flag
-	}}
+func AllEquals(varnames ...VariableName) Constraints {
+	return mapCombinationsToBinaryConstraint(varnames, Equals)
 }
 
 // AllUnique Constraint generator to check if all variable values are unique
-func AllUnique(varnames ...VariableName) Constraint {
+func AllUnique(varnames ...VariableName) Constraints {
+	return mapCombinationsToBinaryConstraint(varnames, NotEquals)
+}
+
+func mapCombinationsToBinaryConstraint(varnames VariableNames, fx func(VariableName, VariableName) Constraint) Constraints {
 	if len(varnames) <= 0 {
 		panic("Not enough variable names provided!")
 	}
-	return Constraint{varnames, func(variables *Variables) bool {
-		uniqueMap := make(map[interface{}]struct{})
-		for _, varname := range varnames {
-			next := variables.Find(varname)
-
-			// if our variable isn't empty and we have already assigned to the map with its value
-			if _, ok := uniqueMap[next.Value]; ok && !next.Empty {
-				return false
+	constraints := make(Constraints, 0)
+	// map of commutative, unique pairs
+	uniqueMap := make(map[[2]VariableName]struct{})
+	for _, name1 := range varnames {
+		for _, name2 := range varnames {
+			// if we've already seen this pair before, continue
+			if _, ok := uniqueMap[[2]VariableName{name1, name2}]; ok {
+				continue
+			} else if _, ok := uniqueMap[[2]VariableName{name2, name1}]; ok {
+				continue
 			}
-			uniqueMap[next.Value] = struct{}{}
+			// we don't want to make constraints for A == A or A != A
+			if name1 == name2 {
+				continue
+			}
+			uniqueMap[[2]VariableName{name1, name2}] = struct{}{}
+			constraints = append(constraints, fx(name1, name2))
 		}
-		return true
-	}}
+	}
+	return constraints
 }

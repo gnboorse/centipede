@@ -1,6 +1,8 @@
 package centipede
 
-// SimplifyPreAssignment constraint propagation algorithm used to
+import "fmt"
+
+// SimplifyPreAssignment basic constraint propagation algorithm used to
 // simplify variable domains before solving based on variables already
 // assigned to. Condition: if a variable has been assigned to with
 // a given value, remove that value from the domain of all variables
@@ -46,6 +48,26 @@ func (state *CSPState) SimplifyPreAssignment() {
 				}
 			}
 		}
+	}
+}
+
+// MakeArcConsistent algorithm loosely based off of AC-3 used to make the
+// given CSP fully arc consistent.
+func (state *CSPState) MakeArcConsistent() {
+	// create queue and fill it with constraints
+	queue := make([]int, 0)
+	for i := range state.Constraints {
+		queue = append(queue, i) // queue contains indices
+	}
+	// loop until the queue is empty
+	for len(queue) > 0 {
+		// pop first item off of queue
+		index := queue[0]
+		queue = queue[1:]
+		constraint := state.Constraints[index]
+		fmt.Println(constraint)
+
+		//todo: need to fill this out
 	}
 }
 
