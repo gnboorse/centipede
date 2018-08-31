@@ -26,7 +26,7 @@ For example usage of this library, see the `examples/` directory.
 
 ## Documentation
 
-Godocs are available [here](docs/README.md).
+Godocs are available [here](doc/README.md).
 
 ## Installation
 
