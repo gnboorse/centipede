@@ -119,10 +119,10 @@ func (variables *Variables) SetDomain(name VariableName, domain Domain) {
 }
 
 // Find find an Variable by name in an Variables collection
-func (variables *Variables) Find(name VariableName) Variable {
-	for _, variable := range *variables {
-		if variable.Name == name {
-			return variable
+func (variables *Variables) Find(name VariableName) *Variable {
+	for i := 0; i < len(*variables); i++ {
+		if (*variables)[i].Name == name {
+			return &(*variables)[i]
 		}
 	}
 	panic(fmt.Sprintf("Variable not found by name %v in variables %v", name, variables))
@@ -152,4 +152,30 @@ func (variables *Variables) Unassigned() int {
 // Complete indicates if all variables have been assigned to
 func (variables *Variables) Complete() bool {
 	return variables.Unassigned() == 0
+}
+
+// EvaluateDomainRemovals remove values from domain based on DomainRemovals in propagation
+func (variables *Variables) EvaluateDomainRemovals(domainRemovals DomainRemovals) {
+	for _, removal := range domainRemovals {
+		// prune values from domain
+		modifiedVariable := variables.Find(removal.VariableName)
+		if modifiedVariable.Empty {
+			modifiedVariable.Domain = modifiedVariable.Domain.Remove(removal.Value)
+			fmt.Printf("Removed value %v from domain for variable %v. New Domain is: %v\n",
+				removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
+		}
+	}
+}
+
+// ResetDomainRemovalEvaluation undo pruning on a variable's domain
+func (variables *Variables) ResetDomainRemovalEvaluation(domainRemovals DomainRemovals) {
+	for _, removal := range domainRemovals {
+		// add back all pruned domain values
+		modifiedVariable := variables.Find(removal.VariableName)
+		if !modifiedVariable.Domain.Contains(removal.Value) {
+			modifiedVariable.Domain = append(modifiedVariable.Domain, removal.Value)
+			fmt.Printf("Added value %v to domain for variable %v. New Domain is: %v\n",
+				removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
+		}
+	}
 }

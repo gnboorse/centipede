@@ -18,4 +18,5 @@ package centipede
 type CSPState struct {
 	Vars        Variables
 	Constraints Constraints
+	Propagations
 }

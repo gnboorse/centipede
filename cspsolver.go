@@ -14,6 +14,8 @@
 
 package centipede
 
+import "fmt"
+
 // BackTrackingCSPSolver struct for holding solver state
 type BackTrackingCSPSolver struct {
 	State CSPState
@@ -21,7 +23,12 @@ type BackTrackingCSPSolver struct {
 
 // NewBackTrackingCSPSolver create a solver
 func NewBackTrackingCSPSolver(vars Variables, constraints Constraints) BackTrackingCSPSolver {
-	return BackTrackingCSPSolver{CSPState{vars, constraints}}
+	return BackTrackingCSPSolver{CSPState{vars, constraints, []Propagation{}}}
+}
+
+// NewBackTrackingCSPSolverWithPropagation create a solver
+func NewBackTrackingCSPSolverWithPropagation(vars Variables, constraints Constraints, propagations Propagations) BackTrackingCSPSolver {
+	return BackTrackingCSPSolver{CSPState{vars, constraints, propagations}}
 }
 
 // Solve solves for values in the CSP
@@ -32,16 +39,29 @@ func (solver *BackTrackingCSPSolver) Solve() bool {
 // implements backtracking search
 func reduce(state *CSPState) bool {
 	// iterate over unassigned variables
-	for i, variable := range state.Vars {
+	for i := range state.Vars {
 		// ignore variables that have been set
-		if variable.Empty {
+		if state.Vars[i].Empty {
 			// iterate over options in the domain
-			for _, option := range variable.Domain {
+			domainRemovals := make(DomainRemovals, 0)
+			variableDomain := state.Vars[i].Domain
+			for _, option := range variableDomain {
+				// undo any attempts to do domain propagation
+				state.Vars.ResetDomainRemovalEvaluation(domainRemovals)
+
 				// set variable
+				fmt.Printf("Setting variable %v with value %v\n", state.Vars[i], option)
 				state.Vars[i].SetValue(option)
+
+				// get the propagations
+				domainRemovals = state.Propagations.Execute(VariableAssignment{state.Vars[i].Name, option}, &state.Vars)
+				// propagate through the rest of the variables
+				state.Vars.EvaluateDomainRemovals(domainRemovals)
+
 				// check if this is valid
 				complete := state.Vars.Complete()
 				satisfied := state.Constraints.AllSatisfied(&state.Vars)
+				fmt.Printf("Completed = %v, Satisfied = %v\n", complete, satisfied)
 
 				if complete && satisfied {
 					// we have a full solution
@@ -60,10 +80,14 @@ func reduce(state *CSPState) bool {
 					continue // keep looping over the domain, but if that fails we'll bottom out
 				}
 			}
+			// reset domain removals
+			state.Vars.ResetDomainRemovalEvaluation(domainRemovals)
 			// unset variable and try with a different one first
 			state.Vars[i].Unset()
+
 		}
 
 	}
+	fmt.Printf("- Bottoming out of reduction loop.\n")
 	return false
 }

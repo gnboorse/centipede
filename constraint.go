@@ -74,6 +74,10 @@ func (constraint *Constraint) Satisfied(variables *Variables) bool {
 	for _, variable := range *variables {
 		// make sure each Variable being passed in has a value consistent with its domain or is empty
 		domainSatisfied = domainSatisfied && (variable.Domain.Contains(variable.Value) || variable.Empty)
+
+		if !variable.Domain.Contains(variable.Value) && !variable.Empty {
+			fmt.Printf("Variable %v with domain %v does not support value %v\n", variable.Name, variable.Domain, variable.Value)
+		}
 	}
 	if !constraintVariablesSatisfied {
 		panic(fmt.Sprintf("Insufficient variables provided. Expected %v", constraint.Vars))
