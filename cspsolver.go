@@ -14,8 +14,6 @@
 
 package centipede
 
-import "fmt"
-
 // BackTrackingCSPSolver struct for holding solver state
 type BackTrackingCSPSolver struct {
 	State CSPState
@@ -50,7 +48,6 @@ func reduce(state *CSPState) bool {
 				state.Vars.ResetDomainRemovalEvaluation(domainRemovals)
 
 				// set variable
-				fmt.Printf("Setting variable %v with value %v\n", state.Vars[i], option)
 				state.Vars[i].SetValue(option)
 
 				// get the propagations
@@ -61,7 +58,6 @@ func reduce(state *CSPState) bool {
 				// check if this is valid
 				complete := state.Vars.Complete()
 				satisfied := state.Constraints.AllSatisfied(&state.Vars)
-				fmt.Printf("Completed = %v, Satisfied = %v\n", complete, satisfied)
 
 				if complete && satisfied {
 					// we have a full solution
@@ -72,7 +68,6 @@ func reduce(state *CSPState) bool {
 					continue
 				} else if !complete && satisfied {
 					// go down a level to assign to another variable
-					// fmt.Printf("Set variable with %v left unset, %#v\n", state.Vars.Unassigned(), state.Vars[i])
 					if reduce(state) {
 						return true
 					}
@@ -88,6 +83,5 @@ func reduce(state *CSPState) bool {
 		}
 
 	}
-	fmt.Printf("- Bottoming out of reduction loop.\n")
 	return false
 }

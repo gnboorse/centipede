@@ -161,8 +161,8 @@ func (variables *Variables) EvaluateDomainRemovals(domainRemovals DomainRemovals
 		modifiedVariable := variables.Find(removal.VariableName)
 		if modifiedVariable.Empty {
 			modifiedVariable.Domain = modifiedVariable.Domain.Remove(removal.Value)
-			fmt.Printf("Removed value %v from domain for variable %v. New Domain is: %v\n",
-				removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
+			// fmt.Printf("Removed value %v from domain for variable %v. New Domain is: %v\n",
+			// 	removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
 		}
 	}
 }
@@ -174,8 +174,8 @@ func (variables *Variables) ResetDomainRemovalEvaluation(domainRemovals DomainRe
 		modifiedVariable := variables.Find(removal.VariableName)
 		if !modifiedVariable.Domain.Contains(removal.Value) {
 			modifiedVariable.Domain = append(modifiedVariable.Domain, removal.Value)
-			fmt.Printf("Added value %v to domain for variable %v. New Domain is: %v\n",
-				removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
+			// fmt.Printf("Added value %v to domain for variable %v. New Domain is: %v\n",
+			// 	removal.Value, removal.VariableName, variables.Find(removal.VariableName).Domain)
 		}
 	}
 }
