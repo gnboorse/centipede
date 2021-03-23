@@ -24,6 +24,8 @@ func main() {
 	printLine()
 	Sudoku()
 	printLine()
+	Zebra()
+	printLine()
 }
 
 func printLine() {
