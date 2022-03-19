@@ -11,7 +11,7 @@ import (
 // mutually exclusive to it, i.e. if A != B and B = 2, remove 2
 // from the domain of A.
 // Use of this algorith is not recommended. Enforce arc consistency instead.
-func (state *CSPState) SimplifyPreAssignment() {
+func (state *CSPState[T]) SimplifyPreAssignment() {
 
 	for _, variable := range state.Vars {
 		if !variable.Empty { // assigned to
@@ -57,7 +57,7 @@ func (state *CSPState) SimplifyPreAssignment() {
 // MakeArcConsistent algorithm based off of AC-3 used to make the
 // given CSP fully arc consistent.
 // https://en.wikipedia.org/wiki/AC-3_algorithm
-func (state *CSPState) MakeArcConsistent() {
+func (state *CSPState[T]) MakeArcConsistent() {
 	// create queue of indices and fill it with constraints
 	queue := make([]int, 0)
 	for i := range state.Constraints {
@@ -106,21 +106,21 @@ func (state *CSPState) MakeArcConsistent() {
 
 // arcReduce reduce the domain of both vars on a binary constraint using
 // arc consistency
-func arcReduce(nameX, nameY VariableName, constraint Constraint, state *CSPState) (bool, Domain) {
-	var modifiedDomain Domain
+func arcReduce[T comparable](nameX, nameY VariableName, constraint Constraint[T], state *CSPState[T]) (bool, Domain[T]) {
+	var modifiedDomain Domain[T]
 	X := state.Vars.Find(nameX)
 	Y := state.Vars.Find(nameY)
 	// if X is already assigned to, domain of X is simply the value of X
-	var dxValues []interface{} // values of X
+	var dxValues []T // values of X
 	if !X.Empty {
-		dxValues = []interface{}{X.Value}
+		dxValues = []T{X.Value}
 	} else {
 		dxValues = X.Domain
 	}
 	// if Y is already assigned to, domain of Y is simply the value of Y
-	var dyValues []interface{} // values of Y
+	var dyValues []T // values of Y
 	if !Y.Empty {
-		dyValues = []interface{}{Y.Value}
+		dyValues = []T{Y.Value}
 	} else {
 		dyValues = Y.Domain
 	}
@@ -132,7 +132,7 @@ func arcReduce(nameX, nameY VariableName, constraint Constraint, state *CSPState
 	for _, vx := range dxValues {
 		foundvy := false
 		for _, vy := range dyValues {
-			tempVars := Variables{Variable{X.Name, vx, dxValues, false}, Variable{Y.Name, vy, dyValues, false}}
+			tempVars := Variables[T]{Variable[T]{X.Name, vx, dxValues, false}, Variable[T]{Y.Name, vy, dyValues, false}}
 			if constraint.ConstraintFunction(&tempVars) {
 				foundvy = true
 				break

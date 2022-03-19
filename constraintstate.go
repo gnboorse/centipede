@@ -1,4 +1,4 @@
-// Copyright 2018 Gabriel Boorse
+// Copyright 2022 Gabriel Boorse
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 package centipede
 
 // CSPState state object for CSP Solver
-type CSPState struct {
-	Vars        Variables
-	Constraints Constraints
-	Propagations
+type CSPState[T comparable] struct {
+	Vars        Variables[T]
+	Constraints Constraints[T]
+	Propagations[T]
 }

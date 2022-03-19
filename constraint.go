@@ -1,4 +1,4 @@
-// Copyright 2018 Gabriel Boorse
+// Copyright 2022 Gabriel Boorse
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,22 +16,24 @@ package centipede
 
 import (
 	"fmt"
+
+	"golang.org/x/exp/constraints"
 )
 
 // Constraint CSP constraint considering integer variables
-type Constraint struct {
+type Constraint[T comparable] struct {
 	Vars               VariableNames
-	ConstraintFunction VariablesConstraintFunction
+	ConstraintFunction VariablesConstraintFunction[T]
 }
 
 // Constraints collection type for Constraint
-type Constraints []Constraint
+type Constraints[T comparable] []Constraint[T]
 
 // VariablesConstraintFunction function used to determine validity of Variables
-type VariablesConstraintFunction func(variables *Variables) bool
+type VariablesConstraintFunction[T comparable] func(variables *Variables[T]) bool
 
 // AllSatisfied check if a collection of Constraints are satisfied
-func (constraints *Constraints) AllSatisfied(variables *Variables) bool {
+func (constraints *Constraints[T]) AllSatisfied(variables *Variables[T]) bool {
 	flag := true
 	for _, constraint := range *constraints {
 		flag = flag && constraint.Satisfied(variables)
@@ -40,8 +42,8 @@ func (constraints *Constraints) AllSatisfied(variables *Variables) bool {
 }
 
 // FilterByName return all constraints related to a particular variable name
-func (constraints *Constraints) FilterByName(name VariableName) Constraints {
-	filtered := make(Constraints, 0)
+func (constraints *Constraints[T]) FilterByName(name VariableName) Constraints[T] {
+	filtered := make(Constraints[T], 0)
 	for _, constraint := range *constraints {
 		if constraint.Vars.Contains(name) {
 			filtered = append(filtered, constraint)
@@ -51,8 +53,8 @@ func (constraints *Constraints) FilterByName(name VariableName) Constraints {
 }
 
 // FilterByOrder return all constraints with the given order (number of related variables)
-func (constraints *Constraints) FilterByOrder(order int) Constraints {
-	filtered := make(Constraints, 0)
+func (constraints *Constraints[T]) FilterByOrder(order int) Constraints[T] {
+	filtered := make(Constraints[T], 0)
 	for _, constraint := range *constraints {
 		if len(constraint.Vars) == order {
 			filtered = append(filtered, constraint)
@@ -62,7 +64,7 @@ func (constraints *Constraints) FilterByOrder(order int) Constraints {
 }
 
 // Satisfied checks to see if the given Constraint is satisfied by the variables presented
-func (constraint *Constraint) Satisfied(variables *Variables) bool {
+func (constraint *Constraint[T]) Satisfied(variables *Variables[T]) bool {
 	constraintVariablesSatisfied := true
 	domainSatisfied := true
 
@@ -91,8 +93,8 @@ func (constraint *Constraint) Satisfied(variables *Variables) bool {
 }
 
 // Equals Constraint generator that checks if two vars are equal
-func Equals(var1 VariableName, var2 VariableName) Constraint {
-	return Constraint{VariableNames{var1, var2}, func(variables *Variables) bool {
+func Equals[T comparable](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var2}, func(variables *Variables[T]) bool {
 		if variables.Find(var1).Empty || variables.Find(var2).Empty {
 			return true
 		}
@@ -101,8 +103,8 @@ func Equals(var1 VariableName, var2 VariableName) Constraint {
 }
 
 // NotEquals Constraint generator that checks if two vars are not equal
-func NotEquals(var1 VariableName, var2 VariableName) Constraint {
-	return Constraint{VariableNames{var1, var2}, func(variables *Variables) bool {
+func NotEquals[T comparable](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var2}, func(variables *Variables[T]) bool {
 		if variables.Find(var1).Empty || variables.Find(var2).Empty {
 			return true
 		}
@@ -111,8 +113,8 @@ func NotEquals(var1 VariableName, var2 VariableName) Constraint {
 }
 
 // UnaryEquals Unary constraint that checks if var1 equals some constant
-func UnaryEquals(var1 VariableName, value interface{}) Constraint {
-	return Constraint{VariableNames{var1}, func(variables *Variables) bool {
+func UnaryEquals[T comparable](var1 VariableName, value interface{}) Constraint[T] {
+	return Constraint[T]{VariableNames{var1}, func(variables *Variables[T]) bool {
 		if variables.Find(var1).Empty {
 			return true
 		}
@@ -121,8 +123,8 @@ func UnaryEquals(var1 VariableName, value interface{}) Constraint {
 }
 
 // UnaryNotEquals Unary constraint that checks if var1 is not equal to some constant
-func UnaryNotEquals(var1 VariableName, value interface{}) Constraint {
-	return Constraint{VariableNames{var1}, func(variables *Variables) bool {
+func UnaryNotEquals[T comparable](var1 VariableName, value interface{}) Constraint[T] {
+	return Constraint[T]{VariableNames{var1}, func(variables *Variables[T]) bool {
 		if variables.Find(var1).Empty {
 			return true
 		}
@@ -130,41 +132,61 @@ func UnaryNotEquals(var1 VariableName, value interface{}) Constraint {
 	}}
 }
 
-// // LessThan Constraint generator that checks if first variable is less than second variable
-// func LessThan(var1 VariableName, var2 VariableName) Constraint {
-// 	return Constraint{VariableNames{var1, var1}, func(variables Variables) bool {
-// 		if variables.Find(var1).Empty || variables.Find(var2).Empty {
-// 			return true
-// 		}
-// 		return variables.Find(var1).Value < variables.Find(var2).Value
-// 	}}
-// }
+// LessThan Constraint generator that checks if first variable is less than second variable
+func LessThan[T constraints.Integer | constraints.Float](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var1}, func(variables *Variables[T]) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value < variables.Find(var2).Value
+	}}
+}
 
-// // GreaterThan Constraint generator that checks if first variable is less than second variable
-// func GreaterThan(var1 VariableName, var2 VariableName) Constraint {
-// 	return Constraint{VariableNames{var1, var1}, func(variables Variables) bool {
-// 		if variables.Find(var1).Empty || variables.Find(var2).Empty {
-// 			return true
-// 		}
-// 		return variables.Find(var1).Value > variables.Find(var2).Value
-// 	}}
-// }
+// GreaterThan Constraint generator that checks if first variable is less than second variable
+func GreaterThan[T constraints.Integer | constraints.Float](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var1}, func(variables *Variables[T]) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value > variables.Find(var2).Value
+	}}
+}
+
+// LessThanOrEqualTo Constraint generator that checks if first variable is less than or equal to second variable
+func LessThanOrEqualTo[T constraints.Integer | constraints.Float](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var1}, func(variables *Variables[T]) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value <= variables.Find(var2).Value
+	}}
+}
+
+// GreaterThanOrEqualTo Constraint generator that checks if first variable is less than or equal to second variable
+func GreaterThanOrEqualTo[T constraints.Integer | constraints.Float](var1 VariableName, var2 VariableName) Constraint[T] {
+	return Constraint[T]{VariableNames{var1, var1}, func(variables *Variables[T]) bool {
+		if variables.Find(var1).Empty || variables.Find(var2).Empty {
+			return true
+		}
+		return variables.Find(var1).Value >= variables.Find(var2).Value
+	}}
+}
 
 // AllEquals Constraint generator that checks that all given variables are equal
-func AllEquals(varnames ...VariableName) Constraints {
-	return mapCombinationsToBinaryConstraint(varnames, Equals)
+func AllEquals[T comparable](varnames ...VariableName) Constraints[T] {
+	return mapCombinationsToBinaryConstraint(varnames, Equals[T])
 }
 
 // AllUnique Constraint generator to check if all variable values are unique
-func AllUnique(varnames ...VariableName) Constraints {
-	return mapCombinationsToBinaryConstraint(varnames, NotEquals)
+func AllUnique[T comparable](varnames ...VariableName) Constraints[T] {
+	return mapCombinationsToBinaryConstraint(varnames, NotEquals[T])
 }
 
-func mapCombinationsToBinaryConstraint(varnames VariableNames, fx func(VariableName, VariableName) Constraint) Constraints {
+func mapCombinationsToBinaryConstraint[T comparable](varnames VariableNames, fx func(VariableName, VariableName) Constraint[T]) Constraints[T] {
 	if len(varnames) <= 0 {
 		panic("Not enough variable names provided!")
 	}
-	constraints := make(Constraints, 0)
+	constraints := make(Constraints[T], 0)
 	// map of commutative, unique pairs
 	uniqueMap := make(map[[2]VariableName]struct{})
 	for _, name1 := range varnames {
