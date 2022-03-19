@@ -29,7 +29,7 @@ An example usage of the library is provided below:
 
 ```go
 // some integer variables
-vars := centipede.Variables{
+vars := centipede.Variables[int]{
   centipede.NewVariable("A", centipede.IntRange(1, 10)),
   centipede.NewVariable("B", centipede.IntRange(1, 10)),
   centipede.NewVariable("C", centipede.IntRange(1, 10)),
@@ -38,21 +38,21 @@ vars := centipede.Variables{
 }
 
 // numeric constraints
-constraints := centipede.Constraints{
+constraints := centipede.Constraints[int]{
   // using some constraint generators
-  centipede.Equals("A", "D"), // A = D
+  centipede.Equals[int]("A", "D"), // A = D
   // here we implement a custom constraint
-  centipede.Constraint{Vars: centipede.VariableNames{"A", "E"}, // E = A * 2
-    ConstraintFunction: func(variables *centipede.Variables) bool {
+  centipede.Constraint[int]{Vars: centipede.VariableNames{"A", "E"}, // E = A * 2
+    ConstraintFunction: func(variables *centipede.Variables[int]) bool {
       // here we have to use type assertion for numeric methods since
       // Variable.Value is stored as interface{}
       if variables.Find("E").Empty || variables.Find("A").Empty {
         return true
       }
-      return variables.Find("E").Value.(int) == variables.Find("A").Value.(int)*2
+      return variables.Find("E").Value == variables.Find("A").Value*2
     }},
 }
-constraints = append(constraints, centipede.AllUnique("A", "B", "C", "E")...) // A != B != C != E
+constraints = append(constraints, centipede.AllUnique[int]("A", "B", "C", "E")...) // A != B != C != E
 
 // solve the problem
 solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
