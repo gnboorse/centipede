@@ -81,7 +81,7 @@ Godocs are available [here](https://pkg.go.dev/github.com/gnboorse/centipede) on
 ## Installation
 
 ```bash
-go get github.com/gnboorse/centipede
+go get github.com/gnboorse/centipede@v1.0.0
 ```
 
 So far, this project has only been tested on macOS and Linux.
