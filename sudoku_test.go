@@ -1,4 +1,4 @@
-// Copyright 2018 Gabriel Boorse
+// Copyright 2022 Gabriel Boorse
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,16 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
-package main
+package centipede
 
 import (
-	"fmt"
 	"strconv"
-	"strings"
-	"time"
+	"testing"
 
-	"github.com/gnboorse/centipede"
+	"github.com/stretchr/testify/assert"
 )
 
 // Sudoku implementation of a Sudoku puzzle solver. The particular puzzle being
@@ -41,26 +38,26 @@ import (
 // [G7 G8 G9 H7 H8 H9 I7 I8 I9]
 // This solution enforces Arc consistency on all binary constraints in the problem,
 // resulting in a very fast solve
-func Sudoku() {
+func TestSudoku(t *testing.T) {
 
 	// initialize variables
-	vars := make(centipede.Variables, 0)
-	constraints := make(centipede.Constraints, 0)
+	vars := make(Variables[int], 0)
+	constraints := make(Constraints[int], 0)
 
 	letters := [9]string{"A", "B", "C", "D", "E", "F", "G", "H", "I"}
-	tenDomain := centipede.IntRange(1, 10)
+	tenDomain := IntRange(1, 10)
 
 	// configure variables and block constraints
 	for _, letter := range letters {
-		letterVars := make(centipede.VariableNames, 0)
+		letterVars := make(VariableNames, 0)
 		for i := 1; i <= 9; i++ {
-			varName := centipede.VariableName(letter + strconv.Itoa(i))
+			varName := VariableName(letter + strconv.Itoa(i))
 			// add vars like A1, A2, A3 ... A9, B1, B2, B3 ... B9 ... I9
-			vars = append(vars, centipede.NewVariable(varName, tenDomain))
+			vars = append(vars, NewVariable(varName, tenDomain))
 			letterVars = append(letterVars, varName)
 		}
 		// for each block, add uniqueness constraint within block
-		constraints = append(constraints, centipede.AllUnique(letterVars...)...)
+		constraints = append(constraints, AllUnique[int](letterVars...)...)
 	}
 
 	// add horizontal constraints
@@ -68,15 +65,15 @@ func Sudoku() {
 	rowNumberSets := [3][3]int{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
 	for _, letterSet := range rowLetterSets {
 		for _, numberSet := range rowNumberSets {
-			rowVarNames := make(centipede.VariableNames, 0)
+			rowVarNames := make(VariableNames, 0)
 			for _, letter := range letterSet {
 				for _, number := range numberSet {
-					varName := centipede.VariableName(letter + strconv.Itoa(number))
+					varName := VariableName(letter + strconv.Itoa(number))
 					rowVarNames = append(rowVarNames, varName)
 				}
 			}
 			// add uniqueness constraints
-			constraints = append(constraints, centipede.AllUnique(rowVarNames...)...)
+			constraints = append(constraints, AllUnique[int](rowVarNames...)...)
 		}
 	}
 
@@ -85,15 +82,15 @@ func Sudoku() {
 	columnNumberSets := [3][3]int{{1, 4, 7}, {2, 5, 8}, {3, 6, 9}}
 	for _, letterSet := range columnLetterSets {
 		for _, numberSet := range columnNumberSets {
-			columnVarNames := make(centipede.VariableNames, 0)
+			columnVarNames := make(VariableNames, 0)
 			for _, letter := range letterSet {
 				for _, number := range numberSet {
-					varName := centipede.VariableName(letter + strconv.Itoa(number))
+					varName := VariableName(letter + strconv.Itoa(number))
 					columnVarNames = append(columnVarNames, varName)
 				}
 			}
 			// add uniqueness constraints
-			constraints = append(constraints, centipede.AllUnique(columnVarNames...)...)
+			constraints = append(constraints, AllUnique[int](columnVarNames...)...)
 		}
 	}
 	// set values already known
@@ -129,41 +126,52 @@ func Sudoku() {
 	vars.SetValue("I9", 9)
 
 	// create solver
-	solver := centipede.NewBackTrackingCSPSolver(vars, constraints)
+	solver := NewBackTrackingCSPSolver(vars, constraints)
 
-	begin := time.Now()
 	// simplify variable domains following initial assignment
 	solver.State.MakeArcConsistent()
 	success := solver.Solve() // run the solution
-	elapsed := time.Since(begin)
 
-	// output results and time elapsed
-	if success {
-		fmt.Printf("Found solution in %s\n", elapsed)
-		fmt.Println("Final sudoku solution:")
-		// pretty-print sudoku puzzle
-		for _, letterSet := range rowLetterSets {
-			for _, numberSet := range rowNumberSets {
-				fmt.Println(strings.Repeat("-", 8*9+2))
-				fmt.Printf("|")
-				for _, letter := range letterSet {
-					for _, number := range numberSet {
-						varName := centipede.VariableName(letter + strconv.Itoa(number))
-						variable := solver.State.Vars.Find(varName)
-						fmt.Printf(" (%v %v) ", variable.Name, variable.Value)
-					}
+	assert.True(t, success)
+
+	// check that we have a valid sudoku solution
+
+	for _, letterSet := range rowLetterSets {
+		for _, numberSet := range rowNumberSets {
+			sum := 0
+			for _, letter := range letterSet {
+				for _, number := range numberSet {
+					varName := VariableName(letter + strconv.Itoa(number))
+					variable := solver.State.Vars.Find(varName)
+					sum += variable.Value
 				}
-				fmt.Printf("|\n")
-
 			}
+			assert.Equal(t, 45, sum)
 		}
-		fmt.Println(strings.Repeat("-", 8*9+2))
-		// for _, variable := range solver.State.Vars {
-		// 	// print out values for each variable
-		// 	fmt.Printf("Variable %v = %v\n", variable.Name, variable.Value)
-		// }
-	} else {
-		fmt.Printf("Could not find solution in %s\n", elapsed)
+	}
+
+	for _, letterSet := range columnLetterSets {
+		for _, numberSet := range columnNumberSets {
+			sum := 0
+			for _, letter := range letterSet {
+				for _, number := range numberSet {
+					varName := VariableName(letter + strconv.Itoa(number))
+					variable := solver.State.Vars.Find(varName)
+					sum += variable.Value
+				}
+			}
+			assert.Equal(t, 45, sum)
+		}
+	}
+
+	for _, letter := range letters {
+		sum := 0
+		for num := 1; num <= 9; num++ {
+			varName := VariableName(letter + strconv.Itoa(num))
+			variable := solver.State.Vars.Find(varName)
+			sum += variable.Value
+		}
+		assert.Equal(t, 45, sum)
 	}
 
 }

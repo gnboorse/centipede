@@ -1,4 +1,4 @@
-// Copyright 2018 Gabriel Boorse
+// Copyright 2022 Gabriel Boorse
 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,40 +33,39 @@ func (varnames *VariableNames) Contains(varname VariableName) bool {
 }
 
 // Variable indicates a CSP variable of interface{} type
-type Variable struct {
+type Variable[T comparable] struct {
 	Name   VariableName
-	Value  interface{}
-	Domain Domain
+	Value  T
+	Domain Domain[T]
 	Empty  bool
 }
 
 // NewVariable constructor for Variable type
-func NewVariable(name VariableName, domain Domain) Variable {
-	return Variable{name, 0, domain, true}
+func NewVariable[T comparable](name VariableName, domain Domain[T]) Variable[T] {
+	return Variable[T]{Name: name, Domain: domain, Empty: true}
 }
 
 // SetValue setter for Variable value field
-func (variable *Variable) SetValue(value interface{}) {
+func (variable *Variable[T]) SetValue(value T) {
 	variable.Value = value
 	variable.Empty = false
 }
 
 // Unset the variable
-func (variable *Variable) Unset() {
+func (variable *Variable[T]) Unset() {
 	variable.Empty = true
-	variable.Value = nil
 }
 
 // SetDomain set the domain of the given variable
-func (variable *Variable) SetDomain(domain Domain) {
+func (variable *Variable[T]) SetDomain(domain Domain[T]) {
 	variable.Domain = domain
 }
 
 // Variables collection type for interface{} type variables
-type Variables []Variable
+type Variables[T comparable] []Variable[T]
 
 // SetValue setter for Variables collection
-func (variables *Variables) SetValue(name VariableName, value interface{}) {
+func (variables *Variables[T]) SetValue(name VariableName, value T) {
 	foundIndex := -1
 
 	for index, variable := range *variables {
@@ -84,7 +83,7 @@ func (variables *Variables) SetValue(name VariableName, value interface{}) {
 }
 
 // Unset unset a variable with the given name
-func (variables *Variables) Unset(name VariableName) {
+func (variables *Variables[T]) Unset(name VariableName) {
 	foundIndex := -1
 
 	for index, variable := range *variables {
@@ -95,14 +94,13 @@ func (variables *Variables) Unset(name VariableName) {
 	if !(foundIndex >= 0) {
 		panic(fmt.Sprintf("Variable not found by name %v in variables %v", name, variables))
 	} else {
-		(*variables)[foundIndex].Value = nil
 		(*variables)[foundIndex].Empty = true
 
 	}
 }
 
 // SetDomain set the domain of the given variable by name
-func (variables *Variables) SetDomain(name VariableName, domain Domain) {
+func (variables *Variables[T]) SetDomain(name VariableName, domain Domain[T]) {
 	foundIndex := -1
 
 	for index, variable := range *variables {
@@ -119,7 +117,7 @@ func (variables *Variables) SetDomain(name VariableName, domain Domain) {
 }
 
 // Find find an Variable by name in an Variables collection
-func (variables *Variables) Find(name VariableName) *Variable {
+func (variables *Variables[T]) Find(name VariableName) *Variable[T] {
 	for i := 0; i < len(*variables); i++ {
 		if (*variables)[i].Name == name {
 			return &(*variables)[i]
@@ -129,7 +127,7 @@ func (variables *Variables) Find(name VariableName) *Variable {
 }
 
 // Contains slice contains method for Variables
-func (variables *Variables) Contains(name VariableName) bool {
+func (variables *Variables[T]) Contains(name VariableName) bool {
 	for _, variable := range *variables {
 		if variable.Name == name {
 			return true
@@ -139,7 +137,7 @@ func (variables *Variables) Contains(name VariableName) bool {
 }
 
 // Unassigned return the number of unassigned variables
-func (variables *Variables) Unassigned() int {
+func (variables *Variables[T]) Unassigned() int {
 	count := 0
 	for _, variable := range *variables {
 		if variable.Empty {
@@ -150,12 +148,12 @@ func (variables *Variables) Unassigned() int {
 }
 
 // Complete indicates if all variables have been assigned to
-func (variables *Variables) Complete() bool {
+func (variables *Variables[T]) Complete() bool {
 	return variables.Unassigned() == 0
 }
 
 // EvaluateDomainRemovals remove values from domain based on DomainRemovals in propagation
-func (variables *Variables) EvaluateDomainRemovals(domainRemovals DomainRemovals) {
+func (variables *Variables[T]) EvaluateDomainRemovals(domainRemovals DomainRemovals[T]) {
 	for _, removal := range domainRemovals {
 		// prune values from domain
 		modifiedVariable := variables.Find(removal.VariableName)
@@ -168,7 +166,7 @@ func (variables *Variables) EvaluateDomainRemovals(domainRemovals DomainRemovals
 }
 
 // ResetDomainRemovalEvaluation undo pruning on a variable's domain
-func (variables *Variables) ResetDomainRemovalEvaluation(domainRemovals DomainRemovals) {
+func (variables *Variables[T]) ResetDomainRemovalEvaluation(domainRemovals DomainRemovals[T]) {
 	for _, removal := range domainRemovals {
 		// add back all pruned domain values
 		modifiedVariable := variables.Find(removal.VariableName)
