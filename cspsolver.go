@@ -33,7 +33,7 @@ func NewBackTrackingCSPSolverWithPropagation[T comparable](vars Variables[T], co
 
 // Solve solves for values in the CSP
 func (solver *BackTrackingCSPSolver[T]) Solve(ctx context.Context) (bool, error) {
-	b, err := RunWithContext[bool](ctx, func() bool {
+	b, err := RunWithContext(ctx, func() bool {
 		return reduce(&solver.State)
 	})
 	if b != nil && *b {
@@ -44,6 +44,12 @@ func (solver *BackTrackingCSPSolver[T]) Solve(ctx context.Context) (bool, error)
 
 // implements backtracking search
 func reduce[T comparable](state *CSPState[T]) bool {
+	complete := state.Vars.Complete()
+	satisfied := state.Constraints.AllSatisfied(&state.Vars)
+	if complete && satisfied {
+		return true
+	}
+
 	// iterate over unassigned variables
 	for i := range state.Vars {
 		// ignore variables that have been set
