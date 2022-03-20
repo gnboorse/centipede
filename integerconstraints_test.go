@@ -15,6 +15,7 @@
 package centipede
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -50,7 +51,8 @@ func TestIntegerConstraints(t *testing.T) {
 
 	// solve the problem
 	solver := NewBackTrackingCSPSolver(vars, constraints)
-	success := solver.Solve() // run the solution
+	success, err := solver.Solve(context.TODO()) // run the solution
+	assert.Nil(t, err)
 
 	assert.True(t, success)
 	values := map[string]int{}

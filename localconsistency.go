@@ -1,6 +1,7 @@
 package centipede
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -11,7 +12,19 @@ import (
 // mutually exclusive to it, i.e. if A != B and B = 2, remove 2
 // from the domain of A.
 // Use of this algorith is not recommended. Enforce arc consistency instead.
-func (state *CSPState[T]) SimplifyPreAssignment() {
+func (state *CSPState[T]) SimplifyPreAssignment(ctx context.Context) error {
+	_, err := RunWithContext(ctx, func() bool {
+		state.simplify()
+		return true
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (state *CSPState[T]) simplify() {
 
 	for _, variable := range state.Vars {
 		if !variable.Empty { // assigned to
@@ -57,7 +70,19 @@ func (state *CSPState[T]) SimplifyPreAssignment() {
 // MakeArcConsistent algorithm based off of AC-3 used to make the
 // given CSP fully arc consistent.
 // https://en.wikipedia.org/wiki/AC-3_algorithm
-func (state *CSPState[T]) MakeArcConsistent() {
+func (state *CSPState[T]) MakeArcConsistent(ctx context.Context) error {
+	_, err := RunWithContext(ctx, func() bool {
+		state.arcConsistency()
+		return true
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (state *CSPState[T]) arcConsistency() {
 	// create queue of indices and fill it with constraints
 	queue := make([]int, 0)
 	for i := range state.Constraints {

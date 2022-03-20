@@ -15,6 +15,7 @@
 package centipede
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,8 +88,9 @@ func TestZebra(t *testing.T) {
 	solver := NewBackTrackingCSPSolver(vars, constraints)
 
 	// simplify variable domains following initial assignment
-	solver.State.MakeArcConsistent()
-	success := solver.Solve() // run the solution
+	solver.State.MakeArcConsistent(context.TODO())
+	success, err := solver.Solve(context.TODO()) // run the solution
+	assert.Nil(t, err)
 
 	assert.True(t, success)
 
