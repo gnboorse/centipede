@@ -15,6 +15,7 @@
 package centipede
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +53,8 @@ func TestMapColoringAustralia(t *testing.T) {
 
 	// create the solver with a maximum depth of 500
 	solver := NewBackTrackingCSPSolver(vars, constraints)
-	success := solver.Solve() // run the solution
+	success, err := solver.Solve(context.TODO()) // run the solution
+	assert.Nil(t, err)
 
 	assert.True(t, success)
 	values := map[string]string{}

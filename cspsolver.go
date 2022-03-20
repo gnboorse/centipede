@@ -14,6 +14,8 @@
 
 package centipede
 
+import "context"
+
 // BackTrackingCSPSolver struct for holding solver state
 type BackTrackingCSPSolver[T comparable] struct {
 	State CSPState[T]
@@ -30,8 +32,14 @@ func NewBackTrackingCSPSolverWithPropagation[T comparable](vars Variables[T], co
 }
 
 // Solve solves for values in the CSP
-func (solver *BackTrackingCSPSolver[T]) Solve() bool {
-	return reduce(&solver.State)
+func (solver *BackTrackingCSPSolver[T]) Solve(ctx context.Context) (bool, error) {
+	b, err := RunWithContext[bool](ctx, func() bool {
+		return reduce(&solver.State)
+	})
+	if b != nil && *b {
+		return true, nil
+	}
+	return false, err
 }
 
 // implements backtracking search
