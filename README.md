@@ -44,8 +44,6 @@ constraints := centipede.Constraints[int]{
   // here we implement a custom constraint
   centipede.Constraint[int]{Vars: centipede.VariableNames{"A", "E"}, // E = A * 2
     ConstraintFunction: func(variables *centipede.Variables[int]) bool {
-      // here we have to use type assertion for numeric methods since
-      // Variable.Value is stored as interface{}
       if variables.Find("E").Empty || variables.Find("A").Empty {
         return true
       }
